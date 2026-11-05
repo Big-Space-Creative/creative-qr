@@ -144,7 +144,7 @@ const formats = [
 
     <AccordionRow v-model:open="open.logo" title="Logo no centro" :value="summary.logo">
       <div class="flex flex-col gap-3">
-        <input ref="fileInput" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" class="sr-only" tabindex="-1" @change="onLogo" />
+        <input ref="fileInput" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" class="sr-only" aria-hidden="true" tabindex="-1" @change="onLogo" />
         <div class="flex flex-wrap items-center gap-2">
           <BaseButton variant="secondary" icon="plus" @click="fileInput?.click()">{{ look.logo ? 'Trocar logo' : 'Adicionar logo' }}</BaseButton>
           <span class="text-small text-fg-3">PNG ou SVG</span>

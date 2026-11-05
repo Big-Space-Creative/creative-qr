@@ -182,7 +182,7 @@ const mapsOptions = [
           <BaseButton variant="secondary" @click="fileInput?.click()">Escolher arquivo</BaseButton>
           <BaseButton variant="ghost" @click="downloadTemplate">Baixar modelo</BaseButton>
         </div>
-        <input ref="fileInput" type="file" accept=".csv,text/csv" class="sr-only" tabindex="-1" @change="readCsv(($event.target as HTMLInputElement).files?.[0])" />
+        <input ref="fileInput" type="file" accept=".csv,text/csv" class="sr-only" aria-hidden="true" tabindex="-1" @change="readCsv(($event.target as HTMLInputElement).files?.[0])" />
       </div>
       <AlertBox v-if="csvError" kind="danger" title="Não foi possível ler o arquivo">{{ csvError }}</AlertBox>
       <template v-if="rows().length">

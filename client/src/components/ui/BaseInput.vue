@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { useId } from 'vue'
+import { ref, useId } from 'vue'
 
 const model = defineModel<string>({ default: '' })
 defineProps<{ label: string; help?: string; error?: string; disabled?: boolean; placeholder?: string; type?: string }>()
 
 const id = useId()
+const el = ref<HTMLInputElement>()
 </script>
 
 <template>
   <div class="flex flex-col gap-2" :class="{ 'opacity-40': disabled }">
     <label :for="id" class="text-small text-fg-2">{{ label }}</label>
-    <div class="field" :data-invalid="!!error">
+    <div class="field cursor-text" :data-invalid="!!error" @click="el?.focus()">
       <input
         :id="id"
+        ref="el"
         v-model="model"
         :type="type ?? 'text'"
         :disabled="disabled"

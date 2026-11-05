@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { useId } from 'vue'
+import { ref, useId } from 'vue'
 
 const model = defineModel<string>({ default: '' })
 defineProps<{ label: string; help?: string; error?: string; disabled?: boolean; placeholder?: string; rows?: number }>()
 
 const id = useId()
+const el = ref<HTMLTextAreaElement>()
 </script>
 
 <template>
   <div class="flex flex-col gap-2" :class="{ 'opacity-40': disabled }">
     <label :for="id" class="text-small text-fg-2">{{ label }}</label>
-    <div class="field !h-auto min-h-24 items-start py-3" :data-invalid="!!error">
+    <div class="field !h-auto min-h-24 cursor-text items-start py-3" :data-invalid="!!error" @click="el?.focus()">
       <textarea
         :id="id"
+        ref="el"
         v-model="model"
         :rows="rows ?? 3"
         :disabled="disabled"

@@ -363,7 +363,7 @@ async function importProject(e: Event) {
           <p class="text-small text-fg-2">Ficam salvos só neste navegador.</p>
         </div>
         <span class="flex-1" />
-        <input ref="fileInput" type="file" accept="application/json,.json" class="sr-only" tabindex="-1" @change="importProject" />
+        <input ref="fileInput" type="file" accept="application/json,.json" class="sr-only" aria-hidden="true" tabindex="-1" @change="importProject" />
         <BaseButton variant="secondary" @click="fileInput?.click()">Importar projeto</BaseButton>
         <BaseButton variant="secondary" :disabled="!recents.length" @click="exportOpen = true">Exportar projeto</BaseButton>
       </div>
@@ -374,7 +374,7 @@ async function importProject(e: Event) {
         <li v-for="r in recents" :key="r.id" class="min-w-0">
           <button type="button" class="focus-ring block w-full rounded-sm text-left" @click="openRecent(r)">
             <RecentCard :name="r.name || typeLabel(r.type)" :meta="`${typeLabel(r.type)} · ${whenLabel(r.at)}`">
-              <span class="block [&>svg]:size-full" v-html="thumb(r)" />
+              <span class="block [&>svg]:size-full" aria-hidden="true" v-html="thumb(r)" />
             </RecentCard>
           </button>
         </li>
