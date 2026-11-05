@@ -29,7 +29,7 @@ const fileName = computed(() => (format.value === 'json' ? 'creative-qr-projeto.
     <div class="flex items-center gap-2 border-t border-line pt-4">
       <AppIcon name="file" class="text-fg-2" />
       <span class="text-data min-w-0 flex-1 truncate">{{ fileName }}</span>
-      <span class="text-data text-fg-2 whitespace-nowrap">{{ props.count }} QR codes</span>
+      <span class="text-data text-fg-2 whitespace-nowrap">{{ props.count }} {{ props.count === 1 ? 'QR code' : 'QR codes' }}</span>
     </div>
   </div>
 </template>

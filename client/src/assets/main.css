@@ -41,6 +41,26 @@
   --status-success: #2f7d4f;
 }
 
+/* Sem seletor de tema no design: segue a preferência do sistema; data-theme força um dos modos. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --bg-app: #f1f4f8;
+    --bg-surface: #ffffff;
+    --bg-sunken: #e8eef5;
+    --bg-scrim: #15141280;
+    --border-default: #d1d6dc;
+    --border-strong: #b0b8c0;
+    --border-focus: #0e77df;
+    --text-primary: #131619;
+    --text-secondary: #4b535c;
+    --text-tertiary: #666666;
+    --text-accent: #0870d7;
+    --status-danger: #ce0000;
+    --status-success: #2f7d4f;
+  
+  }
+}
+
 @theme inline {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
@@ -132,5 +152,50 @@
   }
   &[data-invalid='true']:focus-within {
     outline-color: var(--color-danger);
+  }
+}
+
+/* Slider do Figma: trilho de 4 px, preenchimento em text/primary, miolo de 16 px. */
+@utility slider {
+  appearance: none;
+  background: transparent;
+  height: 16px;
+  width: 100%;
+  cursor: pointer;
+  --fill: 50%;
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--color-fg) var(--fill), var(--color-sunken) var(--fill));
+  }
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-sunken);
+  }
+  &::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-fg);
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    margin-top: -6px;
+    border-radius: 9999px;
+    background: var(--color-fg);
+    border: 2px solid var(--color-app);
+  }
+  &::-moz-range-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 9999px;
+    background: var(--color-fg);
+    border: 2px solid var(--color-app);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 4px;
   }
 }
