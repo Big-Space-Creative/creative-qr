@@ -1,35 +1,136 @@
-@import './base.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
+@import 'tailwindcss';
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
+/* Tokens do Figma (Creative QR · Componentes). Escuro é o padrão; [data-theme='light'] troca os valores. */
+:root {
+  --bg-app: #020202;
+  --bg-surface: #131619;
+  --bg-sunken: #1e1e1e;
+  --bg-accent: #0870d7;
+  --bg-accent-hover: #0661bb;
+  --bg-accent-pressed: #04519e;
+  --bg-scrim: #000000b2;
+  --border-default: #292e34;
+  --border-strong: #4b535c;
+  --border-focus: #48d0fe;
+  --text-primary: #f1f4f8;
+  --text-secondary: #b0b8c0;
+  --text-tertiary: #8a949e;
+  --text-accent: #48d0fe;
+  --text-on-accent: #ffffff;
+  --status-danger: #e5604f;
+  --status-success: #4caf78;
+  --qr-ink: #151412;
+  --qr-paper: #ffffff;
 }
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
+[data-theme='light'] {
+  --bg-app: #f1f4f8;
+  --bg-surface: #ffffff;
+  --bg-sunken: #e8eef5;
+  --bg-scrim: #15141280;
+  --border-default: #d1d6dc;
+  --border-strong: #b0b8c0;
+  --border-focus: #0e77df;
+  --text-primary: #131619;
+  --text-secondary: #4b535c;
+  --text-tertiary: #666666;
+  --text-accent: #0870d7;
+  --status-danger: #ce0000;
+  --status-success: #2f7d4f;
 }
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
-  }
+@theme inline {
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+
+  --color-app: var(--bg-app);
+  --color-surface: var(--bg-surface);
+  --color-sunken: var(--bg-sunken);
+  --color-accent: var(--bg-accent);
+  --color-accent-hover: var(--bg-accent-hover);
+  --color-accent-pressed: var(--bg-accent-pressed);
+  --color-scrim: var(--bg-scrim);
+  --color-line: var(--border-default);
+  --color-line-strong: var(--border-strong);
+  --color-focus: var(--border-focus);
+  --color-fg: var(--text-primary);
+  --color-fg-2: var(--text-secondary);
+  --color-fg-3: var(--text-tertiary);
+  --color-fg-accent: var(--text-accent);
+  --color-on-accent: var(--text-on-accent);
+  --color-danger: var(--status-danger);
+  --color-success: var(--status-success);
+  --color-qr-ink: var(--qr-ink);
+  --color-qr-paper: var(--qr-paper);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
 }
 
-@media (min-width: 1024px) {
+/* Estilos de texto do Figma */
+@utility text-display {
+  font-size: 40px;
+  line-height: 44px;
+  font-weight: 600;
+  letter-spacing: -1.2px;
+}
+@utility text-heading {
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+@utility text-body {
+  font-size: 14px;
+  line-height: 22px;
+}
+@utility text-body-medium {
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+@utility text-small {
+  font-size: 13px;
+  line-height: 20px;
+}
+@utility text-data {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+@layer base {
   body {
-    display: flex;
-    place-items: center;
+    @apply bg-app text-body text-fg font-sans antialiased;
   }
+}
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+/* Anel de foco de 2 px desenhado por dentro da caixa (Figma: foco = traço de 2 px). */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+}
+
+/* Caixa de campo compartilhada por Input, Select e Textarea. */
+@utility field {
+  @apply flex h-12 w-full items-center gap-2 rounded-sm border border-line-strong bg-surface px-4 md:h-10;
+  &:hover {
+    border-color: var(--color-fg-3);
+  }
+  &:focus-within {
+    border-color: var(--color-focus);
+    outline: 2px solid var(--color-focus);
+    outline-offset: -2px;
+  }
+  &[data-invalid='true'] {
+    border-color: var(--color-danger);
+  }
+  &[data-invalid='true']:focus-within {
+    outline-color: var(--color-danger);
   }
 }
