@@ -1,5 +1,5 @@
 # Stack do Creative QR para o Portainer (Stacks → Add stack → Repository).
-# Compose file path: docker-compose.yml. O Portainer faz o build da imagem no próprio host.
+# Compose path: manager.yaml. O Portainer faz o build da imagem no próprio host.
 name: creative-qr
 
 services:
