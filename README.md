@@ -1,22 +1,41 @@
 # creative-qr
 
-## Deploy com Docker / Portainer
+## Deploy com Docker / Portainer (Swarm + Traefik)
 
-Aplicação Vue/Vite estática, servida por Nginx sem root na porta interna `8080`.
-Use um ambiente **Docker Standalone** no Portainer; este Compose faz build local e não é uma stack Swarm.
+App estático (Vue/Vite) servido por nginx sem root na porta `8080`. **Sem API e sem banco de dados.** A stack (`manager.yaml`) segue o padrão dos outros projetos: Docker Swarm + Traefik, rede externa `network_swarm_public`.
 
-1. Acesse **Stacks → Add stack → Repository**.
-2. Informe `https://github.com/Big-Space-Creative/creative-qr.git`, referência `refs/heads/main` e **Compose path** = `manager.yaml`.
-3. Se o repositório for privado, habilite autenticação HTTPS com usuário GitHub e **Personal Access Token** com acesso de leitura ao repositório. Não inclua o token na URL ou nos arquivos.
-4. Em variáveis de ambiente da stack, defina `HOST_PORT` (padrão: `8080`) e faça o deploy. Acesse `http://IP_DO_HOST:HOST_PORT`; a saúde é verificada em `/healthz`.
+### 1. Imagem
+O Swarm não faz build: a imagem precisa existir antes. No nó manager, na raiz do repositório:
 
-Para atualizar, use **Pull and redeploy** na stack ou configure um webhook de atualização do Git. Como a imagem é construída no host, confirme que a atualização reconstrói a imagem com o código novo.
+```sh
+docker build -t creative-qr:TAG .
+```
 
-Atrás de proxy reverso, remova `ports`, conecte `web` à rede externa do proxy (`networks: [proxy]`) e declare na raiz do Compose `networks: { proxy: { external: true } }`. A rede deve existir; configure o proxy para `web:8080` e termine HTTPS nele.
+(ou publique num registry que o Swarm consiga acessar.)
 
-Localmente: `docker compose -f manager.yaml up -d --build`. Para encerrar: `docker compose -f manager.yaml down`.
-O arquivo `.env.example` documenta `HOST_PORT`; no Portainer, defina a variável na própria stack.
+### 2. Stack no Portainer
+**Stacks → Add stack → Repository**, em um ambiente Swarm:
 
-O build usa Debian (glibc), pois o binário nativo usado pelo type-check não está disponível para musl/Alpine. O runtime usa Alpine, contendo apenas Nginx e os arquivos estáticos.
+- URL `https://github.com/Big-Space-Creative/creative-qr.git`, referência `refs/heads/main`, **Compose path** = `manager.yaml`.
+- Repositório privado: autenticação HTTPS com usuário GitHub e Personal Access Token (somente leitura). Não coloque o token na URL.
+- Variáveis (na própria stack, nunca no arquivo):
 
-Referência: [stacks a partir de Git no Portainer](https://docs.portainer.io/user/docker/stacks/add).
+| Variável | Obrigatória | O que é |
+|---|---|---|
+| `APP_DOMAIN` | sim | domínio principal |
+| `APP_DOMAIN_2` | não | domínio extra, atendido ao mesmo tempo |
+| `CQR_IMAGE` | não | imagem a executar (padrão `creative-qr:latest`), ex.: `creative-qr:TAG` |
+
+Pré-requisitos do cluster: rede `network_swarm_public` e o resolver `letsencryptresolver` do Traefik. A saúde do container é verificada em `/healthz`.
+
+### 3. Atualizar
+Construa uma nova tag, altere `CQR_IMAGE` na stack e faça **Update the stack**.
+
+### Local (sem Swarm)
+
+```sh
+docker build -t creative-qr:dev .
+docker run --rm -p 8080:8080 creative-qr:dev   # http://localhost:8080
+```
+
+O build usa Debian (glibc), porque o binário nativo do type-check não existe para musl/Alpine. O runtime usa Alpine, só com nginx e os arquivos estáticos.

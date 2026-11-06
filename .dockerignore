@@ -1,0 +1,14 @@
+# O contexto de build é a raiz do repositório: só o client/ entra na imagem.
+**/node_modules
+**/dist
+.git
+.claude
+.github
+.DS_Store
+*.log
+.env
+.env.*
+manager.yaml
+README.md
+LICENSE
+client/.vscode

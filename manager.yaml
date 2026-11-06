@@ -1,28 +1,32 @@
-# Stack do Creative QR para o Portainer (Stacks → Add stack → Repository).
-# Compose path: manager.yaml. O Portainer faz o build da imagem no próprio host.
-name: creative-qr
+# Stack Docker Swarm (Traefik), no mesmo padrão dos outros projetos. Sem banco de dados.
+# Variáveis (defina na stack do Portainer, nunca no arquivo):
+#   APP_DOMAIN    domínio principal, ex.: creative-qr.bigspacecreative.com.br
+#   APP_DOMAIN_2  domínio extra opcional — atende os dois ao mesmo tempo
+#   CQR_IMAGE     imagem a executar (padrão: creative-qr:latest)
+# Pré-requisito: a imagem existe no nó manager (docker build -t creative-qr:TAG . na raiz do repo)
+# ou num registry acessível. O Swarm não faz build, por isso não há "build:" aqui.
+version: "3.7"
 
 services:
-  web:
-    build:
-      context: ./client
-    image: creative-qr:latest
-    container_name: creative-qr
-    restart: unless-stopped
-    ports:
-      - "${HOST_PORT:-8080}:8080"
-    read_only: true
-    tmpfs:
-      - /tmp
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
-    # O healthcheck vem do Dockerfile (GET /healthz).
-    #
-    # Atrás de um proxy reverso (Traefik, Nginx Proxy Manager, Caddy...):
-    # remova "ports", ligue o serviço à rede do proxy e aponte o proxy para web:8080.
-    #   networks: [proxy]
-# networks:
-#   proxy:
-#     external: true
+  creative-qr:
+    image: ${CQR_IMAGE:-creative-qr:latest}
+    networks:
+      - network_swarm_public
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=network_swarm_public
+        - traefik.http.routers.creative-qr.rule=Host(`${APP_DOMAIN}`) || Host(`${APP_DOMAIN_2:-extra.invalid}`)
+        - traefik.http.routers.creative-qr.entrypoints=websecure
+        - traefik.http.routers.creative-qr.tls.certresolver=letsencryptresolver
+        - traefik.http.routers.creative-qr.service=creative-qr
+        - traefik.http.services.creative-qr.loadbalancer.server.port=8080
+
+networks:
+  network_swarm_public:
+    external: true
+    name: network_swarm_public
