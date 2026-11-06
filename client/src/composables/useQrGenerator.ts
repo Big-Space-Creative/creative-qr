@@ -1,4 +1,5 @@
 import { computed, reactive, ref, watch } from 'vue'
+import { locale, t } from '@/i18n'
 import { batchRows, buildPayload, emptyForm, restore, type Form, type TypeId } from '@/lib/payloads'
 import {
   buildMatrix,
@@ -44,14 +45,22 @@ export function useQrGenerator() {
     shape: DEFAULT_STYLE.shape,
     eyeShape: DEFAULT_STYLE.eyeShape,
     ecc: 'M',
-    frame: { ...DEFAULT_FRAME },
+    frame: { ...DEFAULT_FRAME, text: t('preview.caption') },
   })
   const exp = reactive<ExportOpts>({ ...DEFAULT_EXPORT })
   const touched = ref(false) // erros só depois de o usuário sair de um campo
 
+  // A legenda padrão acompanha o idioma, mas só enquanto o usuário não a tiver editado.
+  const DEFAULT_CAPTIONS = ['Escaneie aqui', 'Scan me']
+  watch(locale, () => {
+    if (DEFAULT_CAPTIONS.includes(look.frame.text)) look.frame.text = t('preview.caption')
+  })
+
   const built = computed(() => buildPayload(type.value, form))
   const payload = computed(() => (built.value && 'payload' in built.value ? built.value.payload : ''))
-  const error = computed(() => (touched.value && built.value && 'error' in built.value ? built.value.error : ''))
+  const error = computed(() =>
+    touched.value && built.value && 'error' in built.value ? t(built.value.error, built.value.params) : '',
+  )
 
   const style = computed<QrStyle>(() => ({
     ink: look.ink,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { t } from '@/i18n'
 import BaseButton from './BaseButton.vue'
 import IconButton from './IconButton.vue'
 
@@ -13,9 +14,9 @@ withDefaults(
     cancelLabel?: string
     destructive?: boolean
   }>(),
-  { confirmLabel: 'Confirmar', cancelLabel: 'Cancelar' },
+  { confirmLabel: '', cancelLabel: '' },
 )
-defineEmits<{ confirm: [] }>()
+defineEmits<{ confirm: []; cancel: [] }>()
 
 const dialog = ref<HTMLDialogElement>()
 
@@ -41,12 +42,12 @@ function onBackdrop(e: MouseEvent) {
     <div class="flex flex-col gap-4 p-6">
       <div class="flex items-center gap-2">
         <h2 class="text-heading min-w-0 flex-1">{{ title }}</h2>
-        <IconButton icon="x" label="Fechar" @click="open = false" />
+        <IconButton icon="x" :label="t('common.close')" @click="open = false" />
       </div>
       <p v-if="description" class="text-body text-fg-2">{{ description }}</p>
       <slot />
       <div class="flex justify-end gap-2 pt-2">
-        <BaseButton variant="secondary" @click="open = false">{{ cancelLabel }}</BaseButton>
+        <BaseButton variant="secondary" @click="$emit('cancel'); open = false">{{ cancelLabel || t('common.cancel') }}</BaseButton>
         <BaseButton :variant="destructive ? 'danger' : 'primary'" :icon="confirmIcon" @click="$emit('confirm')">
           {{ confirmLabel }}
         </BaseButton>

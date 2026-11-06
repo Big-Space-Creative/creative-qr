@@ -103,6 +103,12 @@
   font-weight: 600;
   letter-spacing: -0.2px;
 }
+@utility text-heading-lg {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
 @utility text-body {
   font-size: 14px;
   line-height: 22px;
@@ -197,5 +203,12 @@
   &:focus-visible {
     outline: 2px solid var(--color-focus);
     outline-offset: 4px;
+  }
+}
+
+/* Links âncora do header rolam suavemente, exceto para quem pede menos movimento. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
   }
 }

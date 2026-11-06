@@ -48,12 +48,12 @@ export function emptyForm(): Form {
 }
 
 /** payload = conteúdo do QR; error = mensagem para o usuário; null = ainda vazio (sem erro). */
-export type Built = { payload: string } | { error: string } | null
+export type Built = { payload: string } | { error: string; params?: Record<string, string | number> } | null
 
 export const LIMITS = { text: 2000, sms: 160 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const err = (error: string): Built => ({ error })
+const err = (error: string, params?: Record<string, string | number>): Built => ({ error, params })
 const blank = (...v: string[]) => v.every((x) => !x.trim())
 
 /** Mantém só + e dígitos. */
@@ -100,20 +100,20 @@ function parseAmount(raw: string): number | null {
 export function pixPayload(p: Form['pix']): Built {
   if (blank(p.key, p.name, p.city, p.amount, p.description)) return null
   const key = p.key.trim().startsWith('+') ? phoneDigits(p.key) : p.key.trim()
-  if (!key) return err('Informe a chave Pix.')
-  if (key.length > 77) return err('Chave Pix longa demais.')
+  if (!key) return err('err.pixKey')
+  if (key.length > 77) return err('err.pixKeyLong')
   const name = pixText(p.name, 25)
   const city = pixText(p.city, 15)
-  if (!name) return err('Informe o nome do beneficiário.')
-  if (!city) return err('Informe a cidade.')
+  if (!name) return err('err.pixName')
+  if (!city) return err('err.pixCity')
   const amount = parseAmount(p.amount)
   if (Number.isNaN(amount) || (amount !== null && (amount <= 0 || amount > 9_999_999_999.99))) {
-    return err('Valor inválido. Use, por exemplo, 25,00.')
+    return err('err.pixAmount')
   }
-  if (p.fixed && amount === null) return err('Informe o valor para fixá-lo.')
+  if (p.fixed && amount === null) return err('err.pixFixed')
   const desc = pixText(p.description, 40)
   const account = tlv('00', 'br.gov.bcb.pix') + tlv('01', key) + (desc ? tlv('02', desc) : '')
-  if (account.length > 99) return err('Chave e descrição somam texto demais. Encurte a descrição.')
+  if (account.length > 99) return err('err.pixLong')
   const body =
     tlv('00', '01') +
     tlv('01', '11') +
@@ -149,26 +149,26 @@ const icalTime = (t: { h: number; min: number }) => `T${p2(t.h)}${p2(t.min)}00`
 
 function eventPayload(e: Form['event']): Built {
   if (blank(e.title, e.place, e.startDate, e.startTime, e.endDate, e.endTime, e.description)) return null
-  if (!e.title.trim()) return err('Informe o título do evento.')
+  if (!e.title.trim()) return err('err.eventTitle')
   const sd = parseDate(e.startDate)
-  if (!sd) return err('Data de início inválida. Use dd/mm/aaaa.')
+  if (!sd) return err('err.eventStartDate')
   const ed = e.endDate.trim() ? parseDate(e.endDate) : sd
-  if (!ed) return err('Data de fim inválida. Use dd/mm/aaaa.')
+  if (!ed) return err('err.eventEndDate')
   let dtstart: string
   let dtend: string
   if (e.allDay) {
     const endExclusive = new Date(ed.y, ed.m - 1, ed.d + 1) // DTEND de dia inteiro é exclusivo
     dtstart = `DTSTART;VALUE=DATE:${icalDate(sd)}`
     dtend = `DTEND;VALUE=DATE:${icalDate({ y: endExclusive.getFullYear(), m: endExclusive.getMonth() + 1, d: endExclusive.getDate() })}`
-    if (endExclusive.getTime() <= new Date(sd.y, sd.m - 1, sd.d).getTime()) return err('O fim não pode ser antes do início.')
+    if (endExclusive.getTime() <= new Date(sd.y, sd.m - 1, sd.d).getTime()) return err('err.eventOrder')
   } else {
     const st = parseTime(e.startTime)
-    if (!st) return err('Hora de início inválida. Use hh:mm.')
+    if (!st) return err('err.eventStartTime')
     const et = e.endTime.trim() ? parseTime(e.endTime) : st
-    if (!et) return err('Hora de fim inválida. Use hh:mm.')
+    if (!et) return err('err.eventEndTime')
     const a = new Date(sd.y, sd.m - 1, sd.d, st.h, st.min).getTime()
     const b = new Date(ed.y, ed.m - 1, ed.d, et.h, et.min).getTime()
-    if (b < a) return err('O fim não pode ser antes do início.')
+    if (b < a) return err('err.eventOrder')
     dtstart = `DTSTART:${icalDate(sd)}${icalTime(st)}`
     dtend = `DTEND:${icalDate(ed)}${icalTime(et)}`
   }
@@ -189,12 +189,12 @@ function eventPayload(e: Form['event']): Built {
 
 function vcardPayload(v: Form['vcard']): Built {
   if (blank(...Object.values(v))) return null
-  if (blank(v.first, v.last, v.company)) return err('Informe pelo menos nome, sobrenome ou empresa.')
-  if (v.email.trim() && !EMAIL_RE.test(v.email.trim())) return err('E-mail inválido.')
+  if (blank(v.first, v.last, v.company)) return err('err.vcardName')
+  if (v.email.trim() && !EMAIL_RE.test(v.email.trim())) return err('err.email')
   let site = ''
   if (v.site.trim()) {
     const r = normalizeUrl(v.site)
-    if (!r || 'error' in r) return err('Site inválido. Use, por exemplo, seusite.com.')
+    if (!r || 'error' in r) return err('err.site')
     site = r.url
   }
   const fn = `${v.first.trim()} ${v.last.trim()}`.trim() || v.company.trim()
@@ -222,7 +222,7 @@ function geoPayload(g: Form['geo']): Built {
     const lat = Number(g.lat.trim().replace(',', '.'))
     const lng = Number(g.lng.trim().replace(',', '.'))
     if (!g.lat.trim() || !g.lng.trim() || !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-      return err('Coordenadas inválidas. Latitude entre -90 e 90, longitude entre -180 e 180.')
+      return err('err.geoCoords')
     }
     ll = `${lat},${lng}`
   } else if (!g.address.trim()) {
@@ -239,7 +239,7 @@ function geoPayload(g: Form['geo']): Built {
 }
 
 /** Linhas do CSV carregado (ou o erro de leitura). */
-export function batchRows(b: Form['batch']): { rows: CsvRow[] } | { error: string } {
+export function batchRows(b: Form['batch']): { rows: CsvRow[] } | { error: string; params?: Record<string, string | number> } {
   return csvToRows(parseCsv(b.raw), b.header)
 }
 
@@ -257,13 +257,13 @@ export function buildPayload(type: TypeId, f: Form): Built {
     case 'text': {
       const t = f.text.trim()
       if (!t) return null
-      return t.length > LIMITS.text ? err(`Limite de ${LIMITS.text} caracteres.`) : { payload: t }
+      return t.length > LIMITS.text ? err('err.limitChars', { n: LIMITS.text }) : { payload: t }
     }
     case 'wifi': {
       const w = f.wifi
       if (blank(w.ssid, w.password)) return null
-      if (!w.ssid.trim()) return err('Informe o nome da rede.')
-      if (w.security !== 'nopass' && !w.password) return err('Informe a senha ou escolha “Sem senha”.')
+      if (!w.ssid.trim()) return err('err.wifiSsid')
+      if (w.security !== 'nopass' && !w.password) return err('err.wifiPass')
       const parts = [`T:${w.security}`, `S:${escWifi(w.ssid)}`]
       if (w.security !== 'nopass') parts.push(`P:${escWifi(w.password)}`)
       if (w.hidden) parts.push('H:true')
@@ -275,7 +275,7 @@ export function buildPayload(type: TypeId, f: Form): Built {
       if (blank(f.whatsapp.phone, f.whatsapp.message)) return null
       let d = phoneDigits(f.whatsapp.phone).replace('+', '')
       if (d.length === 10 || d.length === 11) d = `55${d}` // número brasileiro sem DDI
-      if (d.length < 11 || d.length > 15) return err('Número inválido. Use DDI + DDD + número, como +55 85 99999-0000.')
+      if (d.length < 11 || d.length > 15) return err('err.phoneLong')
       const msg = f.whatsapp.message.trim()
       return { payload: `https://wa.me/${d}${msg ? `?text=${encodeURIComponent(msg)}` : ''}` }
     }
@@ -284,7 +284,7 @@ export function buildPayload(type: TypeId, f: Form): Built {
     case 'email': {
       const e = f.email
       if (blank(e.to, e.subject, e.message)) return null
-      if (!EMAIL_RE.test(e.to.trim())) return err('E-mail do destinatário inválido.')
+      if (!EMAIL_RE.test(e.to.trim())) return err('err.emailTo')
       const q = [
         e.subject.trim() && `subject=${encodeURIComponent(e.subject.trim())}`,
         e.message.trim() && `body=${encodeURIComponent(e.message.trim())}`,
@@ -296,14 +296,14 @@ export function buildPayload(type: TypeId, f: Form): Built {
     case 'sms': {
       if (blank(f.sms.phone, f.sms.message)) return null
       const n = phoneDigits(f.sms.phone)
-      if (n.replace('+', '').length < 8) return err('Número inválido.')
-      if (f.sms.message.length > LIMITS.sms) return err(`Limite de ${LIMITS.sms} caracteres.`)
+      if (n.replace('+', '').length < 8) return err('err.phone')
+      if (f.sms.message.length > LIMITS.sms) return err('err.limitChars', { n: LIMITS.sms })
       return { payload: `SMSTO:${n}:${f.sms.message}` }
     }
     case 'tel': {
       if (blank(f.tel.phone)) return null
       const n = phoneDigits(f.tel.phone)
-      return n.replace('+', '').length < 8 ? err('Número inválido.') : { payload: `tel:${n}` }
+      return n.replace('+', '').length < 8 ? err('err.phone') : { payload: `tel:${n}` }
     }
     case 'event':
       return eventPayload(f.event)

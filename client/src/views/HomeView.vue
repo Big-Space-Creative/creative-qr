@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import AboutSection from '@/components/AboutSection.vue'
 import AdvancedOptions from '@/components/AdvancedOptions.vue'
 import CheckRow from '@/components/CheckRow.vue'
+import ConsentBanner from '@/components/ConsentBanner.vue'
 import DestinoRow from '@/components/DestinoRow.vue'
 import ExportarOpcoes from '@/components/ExportarOpcoes.vue'
+import FaqSection from '@/components/FaqSection.vue'
+import PreferencesModal from '@/components/PreferencesModal.vue'
 import RecentCard from '@/components/RecentCard.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import TopBar from '@/components/TopBar.vue'
@@ -16,31 +20,28 @@ import ColorField from '@/components/ui/ColorField.vue'
 import ModalDialog from '@/components/ui/ModalDialog.vue'
 import TypeOption from '@/components/ui/TypeOption.vue'
 import { MIN_CONTRAST, useQrGenerator } from '@/composables/useQrGenerator'
+import { t } from '@/i18n'
+import { recentsAllowed } from '@/lib/consent'
 import { DEFAULT_EXPORT, exportBlob, uniqueName, zipBlob } from '@/lib/exporter'
 import { batchRows, labelFor, snapshot, type TypeId } from '@/lib/payloads'
 import { buildMatrix, DEFAULT_STYLE, MAX_LOGO, qrSvg, type Ecc, type Shape } from '@/lib/qr'
 import { addRecent, mergeRecents, normalizeRecent, recents, whenLabel, type Recent } from '@/lib/recents'
 
-const types: { id: TypeId; label: string; icon: string }[] = [
-  { id: 'url', label: 'URL', icon: 'link' },
-  { id: 'text', label: 'Texto', icon: 'text' },
-  { id: 'wifi', label: 'Wi-Fi', icon: 'wifi' },
-  { id: 'vcard', label: 'vCard', icon: 'user' },
-  { id: 'whatsapp', label: 'WhatsApp', icon: 'whatsapp' },
-  { id: 'pix', label: 'PIX', icon: 'pix' },
-  { id: 'email', label: 'E-mail', icon: 'mail' },
-  { id: 'geo', label: 'Local', icon: 'pin' },
-  { id: 'sms', label: 'SMS', icon: 'sms' },
-  { id: 'tel', label: 'Telefone', icon: 'phone' },
-  { id: 'event', label: 'Calendário', icon: 'calendar' },
-  { id: 'batch', label: 'Lote (CSV)', icon: 'list' },
+const types: { id: TypeId; icon: string }[] = [
+  { id: 'url', icon: 'link' },
+  { id: 'text', icon: 'text' },
+  { id: 'wifi', icon: 'wifi' },
+  { id: 'vcard', icon: 'user' },
+  { id: 'whatsapp', icon: 'whatsapp' },
+  { id: 'pix', icon: 'pix' },
+  { id: 'email', icon: 'mail' },
+  { id: 'geo', icon: 'pin' },
+  { id: 'sms', icon: 'sms' },
+  { id: 'tel', icon: 'phone' },
+  { id: 'event', icon: 'calendar' },
+  { id: 'batch', icon: 'list' },
 ]
-const shapes: { value: Shape; label: string }[] = [
-  { value: 'square', label: 'Quadrado' },
-  { value: 'dots', label: 'Pontos' },
-  { value: 'rounded', label: 'Arredondado' },
-  { value: 'diamond', label: 'Losango' },
-]
+const shapes: Shape[] = ['square', 'dots', 'rounded', 'diamond']
 const eccs: { value: Ecc; label: string }[] = [
   { value: 'L', label: 'L · 7%' },
   { value: 'M', label: 'M · 15%' },
@@ -57,16 +58,16 @@ const copied = ref(false)
 const notice = ref('')
 
 const isBatch = computed(() => type.value === 'batch')
-const typeLabel = (id: string) => types.find((t) => t.id === id)?.label ?? id
+const typeLabel = (id: string) => t(`types.${id}`)
 const hasQr = computed(() => !!g.preview.value)
 const dimmed = computed(() => hasQr.value && g.scan.value !== 'running' && !g.approved.value)
 
 const hints: Partial<Record<TypeId, string>> = {
-  url: 'Preencha a URL de destino para gerar.',
-  text: 'Escreva o texto para gerar.',
-  batch: 'Escolha um arquivo CSV para gerar.',
+  url: 'preview.emptyUrl',
+  text: 'preview.emptyText',
+  batch: 'preview.emptyBatch',
 }
-const emptyHint = computed(() => hints[type.value] ?? 'Preencha os campos para gerar.')
+const emptyHint = computed(() => t(hints[type.value] ?? 'preview.emptyDefault'))
 const destino = computed(() => {
   const p = g.payload.value
   if (!p) return '–'
@@ -76,8 +77,8 @@ const ratio = computed(() => g.contrast.value.toFixed(1).replace('.', ','))
 const minPrint = computed(() => `${g.minPrintCm.value.toFixed(1).replace('.', ',')} cm`)
 const actionLabel = computed(() => {
   if (progress.value) return progress.value
-  if (isBatch.value) return `Baixar ZIP${g.batchCount.value ? ` (${g.batchCount.value})` : ''}`
-  return `Baixar ${exp.format.toUpperCase()}`
+  if (isBatch.value) return g.batchCount.value ? t('actions.downloadZipN', { n: g.batchCount.value }) : t('actions.downloadZip')
+  return t('actions.download', { fmt: exp.format.toUpperCase() })
 })
 
 // --- ações
@@ -126,7 +127,7 @@ async function downloadBatch() {
   const files: { name: string; blob: Blob }[] = []
   let skipped = 0
   for (const [i, row] of r.rows.entries()) {
-    progress.value = `Gerando ${i + 1}/${r.rows.length}`
+    progress.value = t('actions.generating', { i: i + 1, n: r.rows.length })
     await nextTick() // deixa a tela respirar entre um QR e outro
     try {
       const blob = await exportBlob(buildMatrix(row.content, look.ecc), g.style.value, exp)
@@ -136,11 +137,11 @@ async function downloadBatch() {
     }
   }
   if (!files.length) {
-    notice.value = 'Nenhuma linha coube em um QR code.'
+    notice.value = t('actions.noneFit')
     return
   }
-  save(await zipBlob(files), 'creative-qr-lote.zip')
-  if (skipped) notice.value = `${skipped} ${skipped === 1 ? 'linha não coube' : 'linhas não couberam'} em um QR code e ${skipped === 1 ? 'foi pulada' : 'foram puladas'}.`
+  save(await zipBlob(files), 'creative-qr-batch.zip')
+  if (skipped) notice.value = skipped === 1 ? t('actions.skipped1') : t('actions.skippedN', { n: skipped })
 }
 
 async function copy() {
@@ -179,7 +180,7 @@ const exportOpen = ref(false)
 const exportFormat = ref<'json' | 'zip'>('json')
 const withAppearance = ref(true)
 const withScan = ref(true)
-const importError = ref('')
+const importError = ref(false)
 const fileInput = ref<HTMLInputElement>()
 
 async function exportProject() {
@@ -195,7 +196,7 @@ async function exportProject() {
         // payload grande demais: fica de fora do ZIP
       }
     }
-    if (files.length) save(await zipBlob(files), 'creative-qr-imagens.zip')
+    if (files.length) save(await zipBlob(files), 'creative-qr-images.zip')
     return
   }
   const items = recents.value.map((r) => {
@@ -213,7 +214,7 @@ async function importProject(e: Event) {
   const file = input.files?.[0]
   input.value = ''
   if (!file) return
-  importError.value = ''
+  importError.value = false
   try {
     const data = JSON.parse(await file.text())
     const items = (Array.isArray(data?.items) ? data.items : [])
@@ -223,7 +224,7 @@ async function importProject(e: Event) {
     if (!items.length) throw new Error('vazio')
     mergeRecents(items)
   } catch {
-    importError.value = 'Não foi possível ler esse arquivo. Use um .json exportado pelo Creative QR.'
+    importError.value = true
   }
 }
 </script>
@@ -234,41 +235,41 @@ async function importProject(e: Event) {
     <div class="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8">
       <!-- Formulário -->
       <div class="flex flex-col gap-8 max-lg:contents">
-        <h1 class="text-display text-[24px] leading-[30px] md:text-[40px] md:leading-[44px]">Gerar QR code</h1>
+        <h1 class="text-display text-[24px] leading-[30px] md:text-[40px] md:leading-[44px]">{{ t('page.title') }}</h1>
 
         <div class="flex flex-col gap-6 max-lg:contents">
           <section class="flex flex-col gap-4 border-t border-line pt-6 max-lg:order-1">
-            <h2 class="text-body-medium">Tipo</h2>
+            <h2 class="text-body-medium">{{ t('sections.type') }}</h2>
             <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
-              <TypeOption v-for="t in types" :key="t.id" :icon="t.icon" :active="type === t.id" @click="type = t.id">
-                {{ t.label }}
+              <TypeOption v-for="ty in types" :key="ty.id" :icon="ty.icon" :active="type === ty.id" @click="type = ty.id">
+                {{ typeLabel(ty.id) }}
               </TypeOption>
             </div>
           </section>
 
           <section class="flex flex-col gap-4 border-t border-line pt-6 max-lg:order-2">
-            <h2 class="text-body-medium">{{ isBatch ? 'Arquivo CSV' : 'Conteúdo' }}</h2>
+            <h2 class="text-body-medium">{{ isBatch ? t('sections.csv') : t('sections.content') }}</h2>
             <TypeFields :form="form" :type="type" :error="g.error.value" @touch="g.touched.value = true" />
           </section>
 
           <section class="flex flex-col gap-4 border-t border-line pt-6 max-lg:order-4">
-            <h2 class="text-body-medium">Aparência</h2>
+            <h2 class="text-body-medium">{{ t('sections.look') }}</h2>
             <div class="flex flex-col gap-2">
-              <p class="text-small text-fg-2">Cores</p>
+              <p class="text-small text-fg-2">{{ t('look.colors') }}</p>
               <div class="flex flex-wrap gap-x-8 gap-y-4">
-                <ColorField v-model="look.ink" label="Módulos" />
-                <ColorField v-model="look.eye" label="Olhos" />
-                <ColorField v-model="look.paper" label="Fundo" />
+                <ColorField v-model="look.ink" :label="t('look.modules')" />
+                <ColorField v-model="look.eye" :label="t('look.eyes')" />
+                <ColorField v-model="look.paper" :label="t('look.background')" />
               </div>
             </div>
             <div class="flex flex-col gap-2">
-              <p class="text-small text-fg-2">Formato do miolo</p>
+              <p class="text-small text-fg-2">{{ t('look.shape') }}</p>
               <div class="flex flex-wrap gap-2">
-                <BaseTab v-for="s in shapes" :key="s.value" :active="look.shape === s.value" @click="look.shape = s.value">{{ s.label }}</BaseTab>
+                <BaseTab v-for="s in shapes" :key="s" :active="look.shape === s" @click="look.shape = s">{{ t(`look.${s}`) }}</BaseTab>
               </div>
             </div>
             <div class="flex flex-col gap-2">
-              <p class="text-small text-fg-2">Correção de erro</p>
+              <p class="text-small text-fg-2">{{ t('look.ecc') }}</p>
               <div class="flex flex-wrap gap-2">
                 <BaseTab v-for="e in eccs" :key="e.value" :active="look.ecc === e.value" @click="look.ecc = e.value">{{ e.label }}</BaseTab>
               </div>
@@ -276,8 +277,8 @@ async function importProject(e: Event) {
           </section>
 
           <section class="flex flex-col gap-2 border-t border-line pt-6 max-lg:order-5">
-            <h2 class="text-body-medium">Avançado</h2>
-            <p class="text-small text-fg-2">Tudo continua com valores padrão se você não abrir.</p>
+            <h2 class="text-body-medium">{{ t('sections.advanced') }}</h2>
+            <p class="text-small text-fg-2">{{ t('sections.advancedHint') }}</p>
             <div class="pt-2">
               <AdvancedOptions v-model:look="look" v-model:exp="exp" :aspect="g.aspect.value" :export-px="g.exportPx.value" @logo-added="g.ensureEccForLogo()" />
             </div>
@@ -292,65 +293,63 @@ async function importProject(e: Event) {
           class="overflow-hidden rounded-[2px] transition-opacity [&>svg]:block [&>svg]:w-full"
           :class="{ 'opacity-50': dimmed }"
           role="img"
-          :aria-label="`QR code para ${destino}`"
+          :aria-label="t('preview.alt', { dest: destino })"
           v-html="g.preview.value"
         />
         <div v-else class="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-line bg-sunken p-6 text-center">
           <AppIcon :name="g.tooBig.value ? 'alert' : 'link'" class="text-fg-3" />
-          <p class="text-small text-fg-2">{{ g.tooBig.value ? 'Conteúdo grande demais para um QR code.' : emptyHint }}</p>
+          <p class="text-small text-fg-2">{{ g.tooBig.value ? t('preview.tooBig') : emptyHint }}</p>
         </div>
 
-        <DestinoRow :value="destino" />
+        <DestinoRow :label="t('preview.destination')" :value="destino" />
 
         <section class="flex flex-col gap-3 border-t border-line pt-4">
           <div class="flex items-center gap-2">
             <AppIcon name="shield" class="text-fg-2" />
-            <h2 class="text-body-medium">Teste de leitura</h2>
+            <h2 class="text-body-medium">{{ t('scan.title') }}</h2>
             <span class="flex-1" />
-            <span v-if="!hasQr" class="text-data text-fg-3">Aguardando</span>
-            <span v-else-if="g.scan.value === 'running'" class="text-data text-fg-3">Testando…</span>
-            <span v-else-if="g.approved.value" class="text-data text-success">Aprovado</span>
-            <span v-else class="text-data text-danger">Reprovado</span>
+            <span v-if="!hasQr" class="text-data text-fg-3">{{ t('scan.waiting') }}</span>
+            <span v-else-if="g.scan.value === 'running'" class="text-data text-fg-3">{{ t('scan.running') }}</span>
+            <span v-else-if="g.approved.value" class="text-data text-success">{{ t('scan.pass') }}</span>
+            <span v-else class="text-data text-danger">{{ t('scan.fail') }}</span>
           </div>
-          <p v-if="!hasQr" class="text-small text-fg-3">O teste roda assim que houver conteúdo.</p>
+          <p v-if="!hasQr" class="text-small text-fg-3">{{ t('scan.idleHint') }}</p>
           <template v-else>
             <CheckRow
-              label="Leitura do QR"
-              :value="g.scan.value === 'ok' ? 'Conteúdo igual' : g.scan.value === 'running' ? '…' : 'Não leu'"
+              :label="t('scan.read')"
+              :value="g.scan.value === 'ok' ? t('scan.same') : g.scan.value === 'running' ? '…' : t('scan.unread')"
               :icon="g.scan.value === 'fail' ? 'x' : 'check'"
               :tone="g.scan.value === 'fail' ? 'danger' : 'success'"
             />
             <CheckRow
-              label="Contraste"
-              :value="`${ratio} : 1${g.contrastOk.value ? '' : ` (mín. ${String(MIN_CONTRAST).replace('.', ',')})`}`"
+              :label="t('scan.contrast')"
+              :value="`${ratio} : 1${g.contrastOk.value ? '' : ` ${t('scan.contrastMin', { n: String(MIN_CONTRAST).replace('.', ',') })}`}`"
               :icon="g.contrastOk.value ? 'check' : 'x'"
               :tone="g.contrastOk.value ? 'success' : 'danger'"
             />
-            <CheckRow label="Tamanho mínimo impresso" :value="minPrint" />
+            <CheckRow :label="t('scan.minPrint')" :value="minPrint" />
             <CheckRow
               v-if="look.logo"
-              label="Logo cobre"
-              :value="`${look.logo.size}% (limite ${MAX_LOGO}%)`"
+              :label="t('scan.logoCovers')"
+              :value="t('scan.logoValue', { n: look.logo.size, max: MAX_LOGO })"
               :icon="g.logoOk.value ? 'check' : 'x'"
               :tone="g.logoOk.value ? 'success' : 'danger'"
             />
-            <CheckRow label="Densidade" :value="`${g.modules.value} × ${g.modules.value} módulos`" />
+            <CheckRow :label="t('scan.density')" :value="t('scan.densityValue', { n: g.modules.value })" />
             <p v-if="!g.contrastOk.value || !g.logoOk.value" class="text-small text-fg-2">
-              Aumente o contraste entre módulos e fundo{{ look.logo ? ` e reduza a logo para até ${MAX_LOGO}%` : '' }}.
+              {{ look.logo ? t('scan.hintContrastLogo', { max: MAX_LOGO }) : t('scan.hintContrast') }}
             </p>
-            <p v-else-if="g.scan.value === 'fail' && look.logo" class="text-small text-fg-2">
-              A logo cobre demais e o QR não lê. Reduza o tamanho dela.
-            </p>
+            <p v-else-if="g.scan.value === 'fail' && look.logo" class="text-small text-fg-2">{{ t('scan.hintLogoCover') }}</p>
           </template>
         </section>
 
-        <AlertBox v-if="notice" kind="info" title="Aviso" dismissible @dismiss="notice = ''">{{ notice }}</AlertBox>
+        <AlertBox v-if="notice" kind="info" :title="t('common.notice')" dismissible @dismiss="notice = ''">{{ notice }}</AlertBox>
 
         <div
           class="flex gap-2 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-20 max-lg:border-t max-lg:border-line max-lg:bg-app max-lg:p-4"
         >
           <BaseButton class="flex-1" icon="download" :disabled="!hasQr || !g.approved.value || busy" @click="download">{{ actionLabel }}</BaseButton>
-          <BaseButton variant="secondary" :disabled="!hasQr || !g.approved.value || busy || isBatch" @click="copy">{{ copied ? 'Copiado' : 'Copiar' }}</BaseButton>
+          <BaseButton variant="secondary" :disabled="!hasQr || !g.approved.value || busy || isBatch" @click="copy">{{ copied ? t('actions.copied') : t('actions.copy') }}</BaseButton>
         </div>
       </div>
     </div>
@@ -359,16 +358,16 @@ async function importProject(e: Event) {
     <section class="mt-12 flex flex-col gap-4 border-t border-line pt-6 md:mt-16">
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex flex-col gap-1">
-          <h2 class="text-body-medium">Recentes</h2>
-          <p class="text-small text-fg-2">Ficam salvos só neste navegador.</p>
+          <h2 class="text-body-medium">{{ t('recents.title') }}</h2>
+          <p class="text-small text-fg-2">{{ recentsAllowed ? t('recents.hint') : t('recents.hintOff') }}</p>
         </div>
         <span class="flex-1" />
         <input ref="fileInput" type="file" accept="application/json,.json" class="sr-only" aria-hidden="true" tabindex="-1" @change="importProject" />
-        <BaseButton variant="secondary" @click="fileInput?.click()">Importar projeto</BaseButton>
-        <BaseButton variant="secondary" :disabled="!recents.length" @click="exportOpen = true">Exportar projeto</BaseButton>
+        <BaseButton variant="secondary" @click="fileInput?.click()">{{ t('recents.import') }}</BaseButton>
+        <BaseButton variant="secondary" :disabled="!recents.length" @click="exportOpen = true">{{ t('recents.export') }}</BaseButton>
       </div>
-      <AlertBox v-if="importError" kind="danger" title="Importação falhou" dismissible @dismiss="importError = ''">
-        {{ importError }}
+      <AlertBox v-if="importError" kind="danger" :title="t('recents.importFailed')" dismissible @dismiss="importError = false">
+        {{ t('recents.importMsg') }}
       </AlertBox>
       <ul v-if="recents.length" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         <li v-for="r in recents" :key="r.id" class="min-w-0">
@@ -379,16 +378,21 @@ async function importProject(e: Event) {
           </button>
         </li>
       </ul>
-      <p v-else class="text-small text-fg-3">Os QR codes que você baixar ou copiar aparecem aqui.</p>
+      <p v-else class="text-small text-fg-3">{{ t('recents.empty') }}</p>
     </section>
   </main>
+
+  <AboutSection />
+  <FaqSection />
   <SiteFooter />
 
+  <ConsentBanner />
+  <PreferencesModal />
   <ModalDialog
     v-model:open="exportOpen"
-    title="Exportar projeto"
-    :description="`Salva ${recents.length === 1 ? 'o QR code' : `os ${recents.length} QR codes`} de Recentes em um arquivo. Eles ficam só neste navegador, então guarde uma cópia.`"
-    confirm-label="Exportar"
+    :title="t('exportProject.title')"
+    :description="recents.length === 1 ? t('exportProject.desc1') : t('exportProject.descN', { n: recents.length })"
+    :confirm-label="t('exportProject.confirm')"
     confirm-icon="download"
     @confirm="exportProject"
   >

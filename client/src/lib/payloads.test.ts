@@ -29,9 +29,9 @@ describe('pix', () => {
     expect(ok(pixPayload({ ...base, fixed: false }))).not.toContain('5405')
   })
   it('valida campos', () => {
-    expect(pixPayload({ ...base, name: '' })).toEqual({ error: 'Informe o nome do beneficiário.' })
-    expect(pixPayload({ ...base, amount: 'abc' })).toMatchObject({ error: expect.stringContaining('Valor inválido') })
-    expect(pixPayload({ ...base, amount: '' })).toEqual({ error: 'Informe o valor para fixá-lo.' })
+    expect(pixPayload({ ...base, name: '' })).toEqual({ error: 'err.pixName', params: undefined })
+    expect(pixPayload({ ...base, amount: 'abc' })).toMatchObject({ error: 'err.pixAmount' })
+    expect(pixPayload({ ...base, amount: '' })).toEqual({ error: 'err.pixFixed', params: undefined })
   })
 })
 
@@ -60,14 +60,14 @@ describe('outros tipos', () => {
   it('sms respeita 160 caracteres', () => {
     const f = emptyForm()
     f.sms = { phone: '+5585999990000', message: 'x'.repeat(161) }
-    expect(buildPayload('sms', f)).toEqual({ error: 'Limite de 160 caracteres.' })
+    expect(buildPayload('sms', f)).toEqual({ error: 'err.limitChars', params: { n: 160 } })
   })
   it('local: coordenadas têm prioridade e são validadas', () => {
     const f = emptyForm()
     f.geo = { address: 'Av. Beira Mar', lat: '-3.7319', lng: '-38.5267', app: 'waze' }
     expect(ok(buildPayload('geo', f))).toBe('https://waze.com/ul?ll=-3.7319,-38.5267&navigate=yes')
     f.geo.lat = '95'
-    expect(buildPayload('geo', f)).toMatchObject({ error: expect.stringContaining('Coordenadas inválidas') })
+    expect(buildPayload('geo', f)).toMatchObject({ error: 'err.geoCoords' })
   })
   it('evento: hora, dia inteiro e fim antes do início', () => {
     const f = emptyForm()
@@ -77,16 +77,16 @@ describe('outros tipos', () => {
     expect(p).toContain('DTSTART:20261022T140000')
     expect(p).toContain('DTEND:20261022T153000')
     f.event.endTime = '13:00'
-    expect(buildPayload('event', f)).toEqual({ error: 'O fim não pode ser antes do início.' })
+    expect(buildPayload('event', f)).toEqual({ error: 'err.eventOrder', params: undefined })
     f.event.allDay = true
     expect(ok(buildPayload('event', f))).toContain('DTEND;VALUE=DATE:20261023')
   })
   it('vcard exige nome ou empresa e valida e-mail', () => {
     const f = emptyForm()
     f.vcard.phone = '123'
-    expect(buildPayload('vcard', f)).toEqual({ error: 'Informe pelo menos nome, sobrenome ou empresa.' })
+    expect(buildPayload('vcard', f)).toEqual({ error: 'err.vcardName', params: undefined })
     f.vcard = { ...f.vcard, first: 'Marcos', last: 'Macedo', email: 'ruim' }
-    expect(buildPayload('vcard', f)).toEqual({ error: 'E-mail inválido.' })
+    expect(buildPayload('vcard', f)).toEqual({ error: 'err.email', params: undefined })
     f.vcard.email = 'm@e.com'
     expect(ok(buildPayload('vcard', f))).toContain('N:Macedo;Marcos;;;')
   })
@@ -98,6 +98,9 @@ describe('outros tipos', () => {
 })
 
 describe('csv', () => {
+  it('aceita cabeçalho em inglês (name,content)', () => {
+    expect(csvToRows(parseCsv('name,content\na,https://x.com'), true)).toEqual({ rows: [{ name: 'a', content: 'https://x.com' }] })
+  })
   it('lê aspas, vírgula, ponto e vírgula e BOM', () => {
     expect(parseCsv('\uFEFFnome;conteudo\nmesa-01;"https://a.com/?x=1,2"\n')).toEqual([
       ['nome', 'conteudo'],
@@ -106,7 +109,7 @@ describe('csv', () => {
   })
   it('usa o cabeçalho, ignora acento e valida coluna obrigatória', () => {
     expect(csvToRows(parseCsv('Nome,Conteúdo\na,https://x.com'), true)).toEqual({ rows: [{ name: 'a', content: 'https://x.com' }] })
-    expect(csvToRows(parseCsv('nome,link\na,b'), true)).toEqual({ error: 'Não achei a coluna “conteudo” no cabeçalho.' })
+    expect(csvToRows(parseCsv('nome,link\na,b'), true)).toEqual({ error: 'err.csvNoColumn' })
   })
   it('sem cabeçalho aceita [nome, conteudo] ou só [conteudo]', () => {
     expect(csvToRows(parseCsv('a,https://x.com'), false)).toEqual({ rows: [{ name: 'a', content: 'https://x.com' }] })

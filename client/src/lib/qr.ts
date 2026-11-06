@@ -392,9 +392,9 @@ export function normalizeUrl(raw: string): { url: string } | { error: string } |
   try {
     const u = new URL(withScheme)
     const okHost = u.hostname.includes('.') || u.hostname === 'localhost'
-    if (!/^https?:$/.test(u.protocol) || !okHost) return { error: 'Endereço inválido. Use algo como seusite.com/promo.' }
+    if (!/^https?:$/.test(u.protocol) || !okHost) return { error: 'err.url' }
     return { url: u.toString() }
   } catch {
-    return { error: 'Endereço inválido. Use algo como seusite.com/promo.' }
+    return { error: 'err.url' }
   }
 }

@@ -9,7 +9,10 @@ defineProps<{ selected?: boolean; disabled?: boolean }>()
     role="option"
     :aria-selected="!!selected"
     :aria-disabled="disabled"
-    class="text-body flex h-12 items-center gap-2 rounded-sm px-4 text-fg md:h-10"
+    :tabindex="disabled ? undefined : -1"
+    class="focus-ring text-body flex h-12 items-center gap-2 rounded-sm px-4 text-fg md:h-10"
+    @keydown.enter.prevent="($event.currentTarget as HTMLElement).click()"
+    @keydown.space.prevent="($event.currentTarget as HTMLElement).click()"
     :class="[
       selected ? 'text-body-medium bg-sunken' : 'hover:bg-sunken',
       disabled ? 'pointer-events-none opacity-40' : 'cursor-pointer',

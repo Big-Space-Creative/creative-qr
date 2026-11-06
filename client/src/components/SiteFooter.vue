@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import BrandSymbol from './brand/BrandSymbol.vue'
 import BrandWordmark from './brand/BrandWordmark.vue'
 </script>
@@ -11,7 +12,7 @@ import BrandWordmark from './brand/BrandWordmark.vue'
         <BrandWordmark :width="96.43" />
       </div>
       <span class="hidden flex-1 md:block" />
-      <p class="text-small text-fg-3">Big Space Creative · Um universo a um clique</p>
+      <p class="text-small text-fg-3">{{ t('footer.credit') }}</p>
     </div>
   </footer>
 </template>

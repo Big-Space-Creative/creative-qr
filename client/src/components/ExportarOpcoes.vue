@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { t } from '@/i18n'
 import AppIcon from './ui/AppIcon.vue'
 import BaseCheckbox from './ui/BaseCheckbox.vue'
 import BaseRadio from './ui/BaseRadio.vue'
@@ -17,19 +18,19 @@ const fileName = computed(() => (format.value === 'json' ? 'creative-qr-projeto.
 <template>
   <div class="flex flex-col gap-4">
     <fieldset class="flex flex-col gap-1">
-      <legend class="text-small mb-1 text-fg-2">Formato do arquivo</legend>
-      <BaseRadio v-model="format" value="json" name="export-format">Projeto completo (.json)</BaseRadio>
-      <BaseRadio v-model="format" value="zip" name="export-format">Só as imagens (.zip com PNG)</BaseRadio>
+      <legend class="text-small mb-1 text-fg-2">{{ t('exportProject.formatLabel') }}</legend>
+      <BaseRadio v-model="format" value="json" name="export-format">{{ t('exportProject.json') }}</BaseRadio>
+      <BaseRadio v-model="format" value="zip" name="export-format">{{ t('exportProject.zip') }}</BaseRadio>
     </fieldset>
     <fieldset class="flex flex-col gap-1">
-      <legend class="text-small mb-1 text-fg-2">Incluir</legend>
-      <BaseCheckbox v-model="withAppearance">Aparência de cada QR code</BaseCheckbox>
-      <BaseCheckbox v-model="withScan">Resultado do teste de leitura</BaseCheckbox>
+      <legend class="text-small mb-1 text-fg-2">{{ t('exportProject.include') }}</legend>
+      <BaseCheckbox v-model="withAppearance">{{ t('exportProject.appearance') }}</BaseCheckbox>
+      <BaseCheckbox v-model="withScan">{{ t('exportProject.scanResult') }}</BaseCheckbox>
     </fieldset>
     <div class="flex items-center gap-2 border-t border-line pt-4">
       <AppIcon name="file" class="text-fg-2" />
       <span class="text-data min-w-0 flex-1 truncate">{{ fileName }}</span>
-      <span class="text-data text-fg-2 whitespace-nowrap">{{ props.count }} {{ props.count === 1 ? 'QR code' : 'QR codes' }}</span>
+      <span class="text-data text-fg-2 whitespace-nowrap">{{ props.count === 1 ? t('exportProject.count1') : t('exportProject.countN', { n: props.count }) }}</span>
     </div>
   </div>
 </template>

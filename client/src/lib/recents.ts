@@ -1,4 +1,6 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { t, locale } from '@/i18n'
+import { recentsAllowed, RECENTS_KEY } from './consent'
 import { pickFields, TYPE_IDS, type TypeId } from './payloads'
 import { ECCS, sanitizeStyle, type Ecc, type QrStyle } from './qr'
 
@@ -14,12 +16,11 @@ export interface Recent {
   at: number
 }
 
-const KEY = 'creative-qr:recentes:v1'
 const MAX = 6
 
 function load(): Recent[] {
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) ?? '[]')
+    const raw = JSON.parse(localStorage.getItem(RECENTS_KEY) ?? '[]')
     return Array.isArray(raw) ? raw.map(normalizeRecent).filter((r): r is Recent => !!r).slice(0, MAX) : []
   } catch {
     return []
@@ -57,11 +58,13 @@ export function normalizeRecent(x: unknown): Recent | null {
   }
 }
 
-export const recents = ref<Recent[]>(load())
+// Sem permissão, nada é lido nem gravado: a lista vive só na memória desta sessão.
+export const recents = ref<Recent[]>(recentsAllowed.value ? load() : [])
 
 function persist() {
+  if (!recentsAllowed.value) return
   try {
-    localStorage.setItem(KEY, JSON.stringify(recents.value))
+    localStorage.setItem(RECENTS_KEY, JSON.stringify(recents.value))
   } catch {
     // ponytail: cota cheia ou modo privado — a lista vive só na sessão. Avisar o usuário se virar problema.
   }
@@ -87,9 +90,24 @@ export function mergeRecents(items: Recent[]) {
 }
 
 export function whenLabel(at: number): string {
-  const day = (t: number) => new Date(t).setHours(0, 0, 0, 0)
+  const day = (v: number) => new Date(v).setHours(0, 0, 0, 0)
   const diff = Math.round((day(Date.now()) - day(at)) / 86_400_000)
-  if (diff <= 0) return 'hoje'
-  if (diff === 1) return 'ontem'
-  return new Date(at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '')
+  if (diff <= 0) return t('recents.today')
+  if (diff === 1) return t('recents.yesterday')
+  return new Date(at).toLocaleDateString(locale.value, { day: '2-digit', month: 'short' }).replace('.', '')
 }
+
+/** Apaga Recentes da memória e do disco. */
+export function clearRecents() {
+  recents.value = []
+  try {
+    localStorage.removeItem(RECENTS_KEY)
+  } catch {
+    // nada a fazer
+  }
+}
+
+// Ao permitir depois, traz o que já estava salvo e grava a lista atual.
+watch(recentsAllowed, (on) => {
+  if (on) mergeRecents(load())
+})

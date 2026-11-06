@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue'
+import { t } from '@/i18n'
 import { DPIS, MAX_PX, MIN_PX, type ExportOpts } from '@/lib/exporter'
 import { EYE_SHAPES, FRAMES, MAX_CAPTION, MAX_LOGO, MIN_LOGO } from '@/lib/qr'
 import type { Look } from '@/composables/useQrGenerator'
@@ -20,18 +21,22 @@ const emit = defineEmits<{ logoAdded: [] }>()
 
 const open = reactive({ eyes: false, logo: false, frame: false, exp: false })
 
-const eyeLabels: Record<(typeof EYE_SHAPES)[number], string> = { square: 'Quadrado', rounded: 'Arredondado', circle: 'Círculo' }
-const frameLabels: Record<(typeof FRAMES)[number], string> = { none: 'Sem moldura', line: 'Linha', card: 'Cartão', bubble: 'Balão' }
+const eyeLabel = (v: (typeof EYE_SHAPES)[number]) =>
+  ({ square: t('advanced.eyeSquare'), rounded: t('advanced.eyeRounded'), circle: t('advanced.eyeCircle') })[v]
+const frameLabel = (v: (typeof FRAMES)[number]) =>
+  ({ none: t('advanced.frameNone'), line: t('advanced.frameLine'), card: t('advanced.frameCard'), bubble: t('advanced.frameBubble') })[v]
 
 const summary = computed(() => ({
-  eyes: `${eyeLabels[look.value.eyeShape]} · ${look.value.eye.toUpperCase()}`,
-  logo: look.value.logo ? `${look.value.logo.shape === 'circle' ? 'Círculo' : 'Quadrado'} · ${look.value.logo.size}% da área` : 'Nenhum',
-  frame: `${frameLabels[look.value.frame.kind]}${look.value.frame.text.trim() ? ` · “${look.value.frame.text.trim()}”` : ''}`,
-  exp: exp.value.format === 'svg' ? 'SVG · vetor' : `${exp.value.format.toUpperCase()} · ${props.exportPx} px · ${exp.value.dpi} DPI`,
+  eyes: `${eyeLabel(look.value.eyeShape)} · ${look.value.eye.toUpperCase()}`,
+  logo: look.value.logo
+    ? `${look.value.logo.shape === 'circle' ? t('advanced.logoCircle') : t('advanced.logoSquare')} · ${t('advanced.logoSizeValue', { n: look.value.logo.size })}`
+    : t('advanced.logoNone'),
+  frame: `${frameLabel(look.value.frame.kind)}${look.value.frame.text.trim() ? ` · “${look.value.frame.text.trim()}”` : ''}`,
+  exp: exp.value.format === 'svg' ? t('advanced.vector') : `${exp.value.format.toUpperCase()} · ${props.exportPx} px · ${exp.value.dpi} DPI`,
 }))
 
 // --- logo: o arquivo é rasterizado em PNG pequeno; assim SVG de terceiros nunca entra no QR
-const logoError = ref('')
+const logoError = ref('') // chave de tradução
 const fileInput = ref<HTMLInputElement>()
 
 function rasterize(file: File): Promise<string> {
@@ -67,7 +72,7 @@ async function onLogo(e: Event) {
   if (!file) return
   logoError.value = ''
   if (!file.type.startsWith('image/') || file.size > 2_000_000) {
-    logoError.value = 'Use uma imagem PNG ou SVG de até 2 MB.'
+    logoError.value = 'advanced.logoErrFile'
     return
   }
   try {
@@ -75,7 +80,7 @@ async function onLogo(e: Event) {
     look.value.logo = { href, size: Math.min(12, MAX_LOGO), shape: 'circle' }
     emit('logoAdded')
   } catch {
-    logoError.value = 'Não foi possível ler essa imagem.'
+    logoError.value = 'advanced.logoErrRead'
   }
 }
 
@@ -138,61 +143,61 @@ const formats = [
 
 <template>
   <div>
-    <AccordionRow v-model:open="open.eyes" title="Olhos do QR" :value="summary.eyes">
-      <ChipGroup v-model="look.eyeShape" label="Formato dos olhos" :options="EYE_SHAPES.map((v) => ({ value: v, label: eyeLabels[v] }))" />
+    <AccordionRow v-model:open="open.eyes" :title="t('advanced.eyes')" :value="summary.eyes">
+      <ChipGroup v-model="look.eyeShape" :label="t('advanced.eyesShape')" :options="EYE_SHAPES.map((v) => ({ value: v, label: eyeLabel(v) }))" />
     </AccordionRow>
 
-    <AccordionRow v-model:open="open.logo" title="Logo no centro" :value="summary.logo">
+    <AccordionRow v-model:open="open.logo" :title="t('advanced.logo')" :value="summary.logo">
       <div class="flex flex-col gap-3">
         <input ref="fileInput" type="file" accept="image/png,image/svg+xml,image/jpeg,image/webp" class="sr-only" aria-hidden="true" tabindex="-1" @change="onLogo" />
         <div class="flex flex-wrap items-center gap-2">
-          <BaseButton variant="secondary" icon="plus" @click="fileInput?.click()">{{ look.logo ? 'Trocar logo' : 'Adicionar logo' }}</BaseButton>
-          <span class="text-small text-fg-3">PNG ou SVG</span>
+          <BaseButton variant="secondary" icon="plus" @click="fileInput?.click()">{{ look.logo ? t('advanced.logoChange') : t('advanced.logoAdd') }}</BaseButton>
+          <span class="text-small text-fg-3">{{ t('advanced.logoFormats') }}</span>
           <template v-if="look.logo">
-            <img :src="look.logo.href" alt="Prévia da logo" class="size-10 rounded-sm border border-line bg-qr-paper object-contain" />
-            <BaseButton variant="ghost" @click="look.logo = undefined">Remover</BaseButton>
+            <img :src="look.logo.href" :alt="t('advanced.logoPreview')" class="size-10 rounded-sm border border-line bg-qr-paper object-contain" />
+            <BaseButton variant="ghost" @click="look.logo = undefined">{{ t('common.remove') }}</BaseButton>
           </template>
         </div>
-        <p v-if="logoError" class="text-small text-danger" role="alert">{{ logoError }}</p>
+        <p v-if="logoError" class="text-small text-danger" role="alert">{{ t(logoError) }}</p>
         <template v-if="look.logo">
-          <BaseSlider v-model="logoSize" label="Tamanho" :min="MIN_LOGO" :max="MAX_LOGO" :value-text="`${logoSize}% da área`" />
+          <BaseSlider v-model="logoSize" :label="t('advanced.logoSize')" :min="MIN_LOGO" :max="MAX_LOGO" :value-text="t('advanced.logoSizeValue', { n: logoSize })" />
           <ChipGroup
             v-model="logoShape"
-            label="Forma do logo"
-            :options="[{ value: 'circle', label: 'Círculo' }, { value: 'square', label: 'Quadrado' }]"
+            :label="t('advanced.logoShape')"
+            :options="[{ value: 'circle', label: t('advanced.logoCircle') }, { value: 'square', label: t('advanced.logoSquare') }]"
           />
-          <p class="text-small text-fg-3">A correção de erro sobe sozinha (Q ou H) conforme o tamanho da logo. O teste de leitura confirma se ainda lê.</p>
+          <p class="text-small text-fg-3">{{ t('advanced.logoEccNote') }}</p>
         </template>
       </div>
     </AccordionRow>
 
-    <AccordionRow v-model:open="open.frame" title="Moldura e texto" :value="summary.frame">
+    <AccordionRow v-model:open="open.frame" :title="t('advanced.frame')" :value="summary.frame">
       <div class="flex flex-col gap-4">
-        <ChipGroup v-model="look.frame.kind" label="Moldura" :options="FRAMES.map((v) => ({ value: v, label: frameLabels[v] }))" />
-        <BaseInput v-model="caption" label="Texto" placeholder="Escaneie aqui" />
+        <ChipGroup v-model="look.frame.kind" :label="t('advanced.frameKind')" :options="FRAMES.map((v) => ({ value: v, label: frameLabel(v) }))" />
+        <BaseInput v-model="caption" :label="t('advanced.caption')" :placeholder="t('advanced.captionPh')" />
         <ChipGroup
           v-model="look.frame.pos"
-          label="Posição do texto"
-          :options="[{ value: 'below', label: 'Abaixo' }, { value: 'above', label: 'Acima' }]"
+          :label="t('advanced.captionPos')"
+          :options="[{ value: 'below', label: t('advanced.below') }, { value: 'above', label: t('advanced.above') }]"
         />
       </div>
     </AccordionRow>
 
-    <AccordionRow v-model:open="open.exp" title="Exportar" :value="summary.exp">
+    <AccordionRow v-model:open="open.exp" :title="t('advanced.export')" :value="summary.exp">
       <div class="flex flex-col gap-4">
-        <ChipGroup v-model="exp.format" label="Formato" :options="[...formats]" />
+        <ChipGroup v-model="exp.format" :label="t('advanced.format')" :options="[...formats]" />
         <div class="flex items-end gap-2">
-          <BaseInput v-model="wTxt" label="Largura" class="min-w-0 flex-1" />
-          <BaseInput v-model="hTxt" label="Altura" class="min-w-0 flex-1" />
+          <BaseInput v-model="wTxt" :label="t('advanced.width')" class="min-w-0 flex-1" />
+          <BaseInput v-model="hTxt" :label="t('advanced.height')" class="min-w-0 flex-1" />
           <BaseTab :active="exp.unit === 'px'" @click="setUnit('px')">px</BaseTab>
           <BaseTab :active="exp.unit === 'cm'" @click="setUnit('cm')">cm</BaseTab>
         </div>
         <p class="text-small" :class="clamped ? 'text-danger' : 'text-fg-3'">
-          Arquivo final: {{ exportPx }} × {{ Math.round(exportPx * aspect) }} px{{ clamped ? ` (limite de ${MIN_PX} a ${MAX_PX} px)` : '' }}
+          {{ t('advanced.finalFile', { w: exportPx, h: Math.round(exportPx * aspect) }) }}{{ clamped ? t('advanced.limits', { min: MIN_PX, max: MAX_PX }) : '' }}
         </p>
-        <BaseSelect v-model="dpi" label="Resolução (DPI)" :options="dpiOptions" />
-        <ToggleRow v-model="exp.transparent">Fundo transparente no arquivo</ToggleRow>
-        <p v-if="exp.format === 'pdf' && exp.transparent" class="text-small text-fg-3">O PDF sai sobre fundo branco.</p>
+        <BaseSelect v-model="dpi" :label="t('advanced.dpi')" :options="dpiOptions" />
+        <ToggleRow v-model="exp.transparent">{{ t('advanced.transparent') }}</ToggleRow>
+        <p v-if="exp.format === 'pdf' && exp.transparent" class="text-small text-fg-3">{{ t('advanced.pdfWhite') }}</p>
       </div>
     </AccordionRow>
   </div>

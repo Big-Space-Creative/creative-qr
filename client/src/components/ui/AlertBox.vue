@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '@/i18n'
 import AppIcon from './AppIcon.vue'
 
 type Kind = 'info' | 'success' | 'danger'
@@ -28,7 +29,7 @@ const kinds: Record<Kind, { icon: string; border: string; tone: string }> = {
     <button
       v-if="dismissible"
       type="button"
-      aria-label="Fechar aviso"
+      :aria-label="t('common.closeNotice')"
       class="focus-ring flex size-6 shrink-0 items-center justify-center rounded-sm text-fg-2 hover:text-fg"
       @click="$emit('dismiss')"
     >

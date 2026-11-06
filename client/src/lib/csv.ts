@@ -39,16 +39,17 @@ export function parseCsv(text: string): string[][] {
 const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
 
 /** Converte linhas do CSV em itens. Sem cabeçalho: [nome, conteudo] ou só [conteudo]. */
-export function csvToRows(table: string[][], hasHeader: boolean): { rows: CsvRow[] } | { error: string } {
-  if (!table.length) return { error: 'O arquivo está vazio.' }
+type Fail = { error: string; params?: Record<string, string | number> }
+export function csvToRows(table: string[][], hasHeader: boolean): { rows: CsvRow[] } | Fail {
+  if (!table.length) return { error: 'err.csvEmpty' }
   let nameIdx = -1
   let contentIdx = 0
   let body = table
   if (hasHeader) {
     const head = (table[0] ?? []).map(norm)
-    contentIdx = head.indexOf('conteudo')
-    nameIdx = head.indexOf('nome')
-    if (contentIdx < 0) return { error: 'Não achei a coluna “conteudo” no cabeçalho.' }
+    contentIdx = head.findIndex((h) => h === 'conteudo' || h === 'content')
+    nameIdx = head.findIndex((h) => h === 'nome' || h === 'name')
+    if (contentIdx < 0) return { error: 'err.csvNoColumn' }
     body = table.slice(1)
   } else if ((table[0]?.length ?? 0) >= 2) {
     nameIdx = 0
@@ -57,10 +58,12 @@ export function csvToRows(table: string[][], hasHeader: boolean): { rows: CsvRow
   const rows = body
     .map((r) => ({ name: (nameIdx >= 0 ? r[nameIdx] : '')?.trim() ?? '', content: r[contentIdx]?.trim() ?? '' }))
     .filter((r) => r.content)
-  if (!rows.length) return { error: 'Nenhuma linha com conteúdo.' }
-  if (rows.length > MAX_ROWS) return { error: `Limite de ${MAX_ROWS} linhas por arquivo.` }
-  if (rows.some((r) => r.content.length > MAX_CELL)) return { error: `Há conteúdo com mais de ${MAX_CELL} caracteres.` }
+  if (!rows.length) return { error: 'err.csvNoRows' }
+  if (rows.length > MAX_ROWS) return { error: 'err.csvLimitRows', params: { n: MAX_ROWS } }
+  if (rows.some((r) => r.content.length > MAX_CELL)) return { error: 'err.csvCellLong', params: { n: MAX_CELL } }
   return { rows }
 }
 
-export const CSV_TEMPLATE = 'nome,conteudo\nmesa-01,https://seusite.com/m/01\nmesa-02,https://seusite.com/m/02\n'
+/** Modelo para download; o cabeçalho vem no idioma da interface (nome,conteudo ou name,content). */
+export const csvTemplate = (nameCol: string, contentCol: string) =>
+  `${nameCol},${contentCol}\ntable-01,https://example.com/t/01\ntable-02,https://example.com/t/02\n`
