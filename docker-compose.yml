@@ -1,0 +1,28 @@
+# Stack do Creative QR para o Portainer (Stacks → Add stack → Repository).
+# Compose file path: docker-compose.yml. O Portainer faz o build da imagem no próprio host.
+name: creative-qr
+
+services:
+  web:
+    build:
+      context: ./client
+    image: creative-qr:latest
+    container_name: creative-qr
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8080}:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # O healthcheck vem do Dockerfile (GET /healthz).
+    #
+    # Atrás de um proxy reverso (Traefik, Nginx Proxy Manager, Caddy...):
+    # remova "ports", ligue o serviço à rede do proxy e aponte o proxy para web:8080.
+    #   networks: [proxy]
+# networks:
+#   proxy:
+#     external: true
