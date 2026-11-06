@@ -12,8 +12,7 @@ RUN npm install -g pnpm@${PNPM_VERSION}
 
 # Só os manifestos primeiro: a camada de dependências é reaproveitada enquanto eles não mudam.
 COPY client/package.json client/pnpm-lock.yaml client/pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 COPY client/ ./
 RUN pnpm build
