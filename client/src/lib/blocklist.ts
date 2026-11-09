@@ -1,6 +1,9 @@
+import { BLOCKED_HOSTS } from './blocklist.data'
+
 // Bloqueio de links de golpe/ilícitos antes de gerar o QR. Roda só no navegador.
-// ponytail: lista estática e heurísticas simples; encurtadores e domínios novos passam.
-// Upgrade: consulta a Safe Browsing/lista remota via backend, se um dia existir.
+// Lista importada: `pnpm blocklist:update` (feeds públicos) -> blocklist.data.ts.
+// ponytail: lista estática; encurtadores e domínios novos passam.
+// Upgrade: consulta a Safe Browsing via backend, se um dia existir.
 
 /** Domínios bloqueados (inclui subdomínios). */
 const DOMAINS = [
@@ -30,6 +33,12 @@ const BRANDS: Record<string, string[]> = {
 
 const onDomain = (host: string, d: string) => host === d || host.endsWith(`.${d}`)
 
+/** Host exato ou qualquer domínio-pai presente na lista importada (a.b.com -> b.com). */
+function inFeed(host: string): boolean {
+  for (let h = host; h.includes('.'); h = h.slice(h.indexOf('.') + 1)) if (BLOCKED_HOSTS.has(h)) return true
+  return false
+}
+
 /** true se a URL aponta para um destino bloqueado. Entrada inválida devolve false. */
 export function isBlockedUrl(raw: string): boolean {
   let host: string
@@ -39,6 +48,7 @@ export function isBlockedUrl(raw: string): boolean {
     return false
   }
   if (DOMAINS.some((d) => onDomain(host, d))) return true
+  if (inFeed(host)) return true
   if (HOST_WORDS.some((w) => host.includes(w))) return true
   const flat = host.replace(/[.-]/g, '')
   return Object.entries(BRANDS).some(

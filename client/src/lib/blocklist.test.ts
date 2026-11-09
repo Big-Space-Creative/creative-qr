@@ -11,6 +11,13 @@ describe('blocklist', () => {
     'libera %s',
     (u) => expect(isBlockedUrl(u)).toBe(false),
   )
+  it('usa a lista importada: host exato bloqueia, raiz compartilhada não', async () => {
+    const { BLOCKED_HOSTS } = await import('./blocklist.data')
+    const [h] = [...BLOCKED_HOSTS]
+    expect(isBlockedUrl(`https://${h}/x`)).toBe(true)
+    expect(isBlockedUrl(`https://sub.${h}`)).toBe(true)
+    for (const root of ['pages.dev', 'blogspot.com', 'github.io']) expect(BLOCKED_HOSTS.has(root)).toBe(false)
+  })
   it('acha link dentro de texto', () => {
     expect(hasBlockedUrl('veja grabify.link/x agora')).toBe(true)
     expect(hasBlockedUrl('olá, tudo bem? arquivo.zip')).toBe(false)

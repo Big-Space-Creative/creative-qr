@@ -13,7 +13,8 @@
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
     "format": "oxfmt src/",
-    "test": "vitest run"
+    "test": "vitest run",
+    "blocklist:update": "node scripts/update-blocklist.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
