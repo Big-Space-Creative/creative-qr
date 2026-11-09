@@ -3,8 +3,9 @@ import jsQR from 'jsqr'
 import { encode } from 'uqr'
 import { zlibSync } from 'fflate'
 
-export type Shape = 'square' | 'dots' | 'rounded' | 'diamond'
-export type EyeShape = 'square' | 'rounded' | 'circle'
+export type Shape = 'square' | 'dots' | 'rounded' | 'diamond' | 'leaf' | 'vbar' | 'hbar'
+export type EyeShape = 'square' | 'rounded' | 'circle' | 'leaf'
+export type GradDir = 'h' | 'v' | 'd'
 export type FrameKind = 'none' | 'line' | 'card' | 'bubble'
 export type LogoShape = 'circle' | 'square'
 export type Ecc = 'L' | 'M' | 'Q' | 'H'
@@ -18,6 +19,12 @@ export interface Frame {
   kind: FrameKind
   text: string
   pos: 'below' | 'above'
+  color?: string // linha e balão (padrão: cor dos módulos)
+  textColor?: string // texto (padrão: cor dos módulos; no balão, a cor do fundo)
+}
+export interface Gradient {
+  to: string // cor final; a inicial é a dos módulos
+  dir: GradDir
 }
 export interface QrStyle {
   ink: string // módulos
@@ -25,12 +32,20 @@ export interface QrStyle {
   paper: string // fundo
   shape: Shape
   eyeShape: EyeShape
+  scale: number // tamanho de cada módulo (0,55 a 1); abaixo de 1 abre espaço entre eles
+  quiet: number // margem em módulos (1 a 6)
+  pupil?: string // centro dos olhos (padrão: cor dos olhos)
+  grad?: Gradient // degradê nos módulos de dados
   logo?: Logo
   frame: Frame
 }
 
-export const SHAPES: readonly Shape[] = ['square', 'dots', 'rounded', 'diamond']
-export const EYE_SHAPES: readonly EyeShape[] = ['square', 'rounded', 'circle']
+export const SHAPES: readonly Shape[] = ['square', 'dots', 'rounded', 'diamond', 'leaf', 'vbar', 'hbar']
+export const EYE_SHAPES: readonly EyeShape[] = ['square', 'rounded', 'circle', 'leaf']
+export const GRAD_DIRS: readonly GradDir[] = ['h', 'v', 'd']
+export const MIN_SCALE = 0.55
+export const MIN_QUIET = 1
+export const MAX_QUIET = 6
 export const FRAMES: readonly FrameKind[] = ['none', 'line', 'card', 'bubble']
 export const ECCS: readonly Ecc[] = ['L', 'M', 'Q', 'H']
 
@@ -49,6 +64,8 @@ export const DEFAULT_STYLE: QrStyle = {
   paper: '#ffffff',
   shape: 'square',
   eyeShape: 'square',
+  scale: 1,
+  quiet: 2,
   frame: DEFAULT_FRAME,
 }
 
@@ -73,20 +90,27 @@ export function sanitizeStyle(x: unknown): QrStyle | null {
         kind: pick(FRAMES, f.kind, DEFAULT_FRAME.kind),
         text: typeof f.text === 'string' ? f.text.slice(0, MAX_CAPTION) : '',
         pos: f.pos === 'above' ? 'above' : 'below',
+        ...(isHex(f.color) ? { color: f.color } : {}),
+        ...(isHex(f.textColor) ? { textColor: f.textColor } : {}),
       }
     : DEFAULT_FRAME
+  const g = s.grad as Partial<Gradient> | undefined
+  const grad = g && typeof g === 'object' && isHex(g.to) ? { to: g.to, dir: pick(GRAD_DIRS, g.dir, 'h') } : undefined
+  const num = (v: unknown, lo: number, hi: number, d: number) => (Number.isFinite(v) ? Math.round(clamp(Number(v), lo, hi) * 100) / 100 : d)
   return {
     ink: s.ink,
     eye: s.eye,
     paper: s.paper,
     shape: pick(SHAPES, s.shape, 'square'),
     eyeShape: pick(EYE_SHAPES, s.eyeShape, 'square'),
+    scale: num(s.scale, MIN_SCALE, 1, 1),
+    quiet: Math.round(num(s.quiet, MIN_QUIET, MAX_QUIET, 2)),
+    ...(isHex(s.pupil) ? { pupil: s.pupil } : {}),
+    ...(grad ? { grad } : {}),
     ...(logo ? { logo } : {}),
     frame,
   }
 }
-
-const QUIET = 2 // módulos de margem dentro do SVG
 
 /** Matriz do QR: `data` = módulo escuro; `types` = tipo de cada módulo (uqr: 0 dados, 2 posição, ...). */
 export interface QrMatrix {
@@ -103,17 +127,54 @@ export function buildMatrix(text: string, ecc: Ecc): QrMatrix {
   return { data, types, size }
 }
 
-function moduleEl(shape: Shape, x: number, y: number): string {
+/** Quadrado de lado `k` centrado no módulo (x, y); k < 1 abre espaço entre os módulos. */
+const box = (x: number, y: number, k: number) => ({ x0: x + (1 - k) / 2, y0: y + (1 - k) / 2, w: k })
+
+/** Folha: dois cantos opostos totalmente arredondados, os outros dois retos. */
+const leaf = (x: number, y: number, w: number, r: number) =>
+  `M${x + r} ${y}H${x + w}V${y + w - r}A${r} ${r} 0 0 1 ${x + w - r} ${y + w}H${x}V${y + r}A${r} ${r} 0 0 1 ${x + r} ${y}z`
+
+function moduleEl(shape: Shape, x: number, y: number, k: number): string {
+  const { x0, y0, w } = box(x, y, k)
   switch (shape) {
     case 'dots':
-      return `<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.46"/>`
+      return `<circle cx="${x + 0.5}" cy="${y + 0.5}" r="${0.46 * k}"/>`
     case 'rounded':
-      return `<rect x="${x}" y="${y}" width="1" height="1" rx="0.34"/>`
-    case 'diamond':
-      return `<path d="M${x + 0.5} ${y - 0.05}L${x + 1.05} ${y + 0.5}L${x + 0.5} ${y + 1.05}L${x - 0.05} ${y + 0.5}Z"/>`
+      return `<rect x="${x0}" y="${y0}" width="${w}" height="${w}" rx="${0.34 * k}"/>`
+    case 'leaf':
+      return `<path d="${leaf(x0, y0, w, w * 0.5)}"/>`
+    case 'diamond': {
+      const h = 0.55 * k
+      return `<path d="M${x + 0.5} ${y + 0.5 - h}L${x + 0.5 + h} ${y + 0.5}L${x + 0.5} ${y + 0.5 + h}L${x + 0.5 - h} ${y + 0.5}Z"/>`
+    }
     default:
-      return `<rect x="${x}" y="${y}" width="1" height="1"/>`
+      return `<rect x="${x0}" y="${y0}" width="${w}" height="${w}"/>`
   }
+}
+
+/** Barras: módulos vizinhos na mesma coluna (ou linha) viram uma só pílula contínua. */
+function barEls(cells: boolean[][], vertical: boolean, q: number, k: number): string {
+  const n = cells.length
+  let out = ''
+  for (let a = 0; a < n; a++) {
+    let b = 0
+    while (b < n) {
+      const on = vertical ? cells[b]?.[a] : cells[a]?.[b]
+      if (!on) {
+        b++
+        continue
+      }
+      let e = b
+      while (e + 1 < n && (vertical ? cells[e + 1]?.[a] : cells[a]?.[e + 1])) e++
+      const len = e - b + 1 - (1 - k) // k < 1 deixa um respiro entre barras vizinhas
+      const off = (1 - k) / 2
+      out += vertical
+        ? `<rect x="${a + q + off}" y="${b + q + off}" width="${k}" height="${len}" rx="${k / 2}"/>`
+        : `<rect x="${b + q + off}" y="${a + q + off}" width="${len}" height="${k}" rx="${k / 2}"/>`
+      b = e + 1
+    }
+  }
+  return out
 }
 
 /** Retângulo arredondado como subcaminho (para anéis com fill-rule evenodd). */
@@ -121,19 +182,24 @@ const rr = (x: number, y: number, w: number, h: number, r: number) =>
   `M${x + r} ${y}h${w - 2 * r}a${r} ${r} 0 0 1 ${r} ${r}v${h - 2 * r}a${r} ${r} 0 0 1 ${-r} ${r}h${-(w - 2 * r)}a${r} ${r} 0 0 1 ${-r} ${-r}v${-(h - 2 * r)}a${r} ${r} 0 0 1 ${r} ${-r}z`
 const circ = (cx: number, cy: number, r: number) => `M${cx - r} ${cy}a${r} ${r} 0 1 0 ${2 * r} 0a${r} ${r} 0 1 0 ${-2 * r} 0z`
 
-function eyeEl(shape: EyeShape, x: number, y: number, color: string): string {
+function eyeEl(shape: EyeShape, x: number, y: number, ring: string, pupil: string): string {
+  const cx = x + 3.5
+  const cy = y + 3.5
   if (shape === 'circle') {
-    return `<path fill="${color}" fill-rule="evenodd" d="${circ(x + 3.5, y + 3.5, 3.5)}${circ(x + 3.5, y + 3.5, 2.5)}"/><circle fill="${color}" cx="${x + 3.5}" cy="${y + 3.5}" r="1.5"/>`
+    return `<path fill="${ring}" fill-rule="evenodd" d="${circ(cx, cy, 3.5)}${circ(cx, cy, 2.5)}"/><circle fill="${pupil}" cx="${cx}" cy="${cy}" r="1.5"/>`
   }
   if (shape === 'rounded') {
-    return `<path fill="${color}" fill-rule="evenodd" d="${rr(x, y, 7, 7, 2)}${rr(x + 1, y + 1, 5, 5, 1.2)}"/><rect fill="${color}" x="${x + 2}" y="${y + 2}" width="3" height="3" rx="0.9"/>`
+    return `<path fill="${ring}" fill-rule="evenodd" d="${rr(x, y, 7, 7, 2)}${rr(x + 1, y + 1, 5, 5, 1.2)}"/><rect fill="${pupil}" x="${x + 2}" y="${y + 2}" width="3" height="3" rx="0.9"/>`
   }
-  return `<path fill="${color}" fill-rule="evenodd" d="M${x} ${y}h7v7h-7zM${x + 1} ${y + 1}v5h5v-5z"/><rect fill="${color}" x="${x + 2}" y="${y + 2}" width="3" height="3"/>`
+  if (shape === 'leaf') {
+    return `<path fill="${ring}" fill-rule="evenodd" d="${leaf(x, y, 7, 3)}${leaf(x + 1, y + 1, 5, 2)}"/><path fill="${pupil}" d="${leaf(x + 2, y + 2, 3, 1.2)}"/>`
+  }
+  return `<path fill="${ring}" fill-rule="evenodd" d="M${x} ${y}h7v7h-7zM${x + 1} ${y + 1}v5h5v-5z"/><rect fill="${pupil}" x="${x + 2}" y="${y + 2}" width="3" height="3"/>`
 }
 
 /** Região central liberada para a logo, em módulos. `size` é a % da área do QR. */
-function logoZone(n: number, logo: Logo) {
-  const cx = QUIET + n / 2
+function logoZone(n: number, logo: Logo, quiet: number) {
+  const cx = quiet + n / 2
   const area = (logo.size / 100) * n * n
   if (logo.shape === 'circle') return { cx, r: Math.sqrt(area / Math.PI), half: 0 }
   return { cx, r: 0, half: Math.sqrt(area) / 2 }
@@ -143,33 +209,39 @@ export interface RenderOpts {
   transparent?: boolean // sem fundo (PNG/SVG exportados)
 }
 
-/** Conteúdo do QR em coordenadas de módulo (0..n+2*QUIET). */
+/** Conteúdo do QR em coordenadas de módulo (0..n+2*margem). */
 function qrInner(m: QrMatrix, s: QrStyle, opts: RenderOpts = {}): string {
   const n = m.size
-  const total = n + QUIET * 2
-  const zone = s.logo ? logoZone(n, s.logo) : null
+  const Q = s.quiet
+  const total = n + Q * 2
+  const zone = s.logo ? logoZone(n, s.logo, Q) : null
   const cleared = (c: number, r: number) => {
     if (!zone) return false
-    const dx = c + QUIET + 0.5 - zone.cx
-    const dy = r + QUIET + 0.5 - zone.cx
+    const dx = c + Q + 0.5 - zone.cx
+    const dy = r + Q + 0.5 - zone.cx
     return zone.r ? Math.hypot(dx, dy) <= zone.r : Math.abs(dx) <= zone.half && Math.abs(dy) <= zone.half
   }
   let shaped = ''
   let fixed = ''
+  const bars = s.shape === 'vbar' || s.shape === 'hbar'
+  const dataCells = m.data.map(() => [] as boolean[])
   m.data.forEach((row, r) =>
     row.forEach((on, c) => {
       const t = m.types[r]?.[c]
       if (!on || t === POSITION || cleared(c, r)) return
-      if (t === DATA) shaped += moduleEl(s.shape, c + QUIET, r + QUIET)
-      else fixed += moduleEl('square', c + QUIET, r + QUIET)
+      if (t === DATA) {
+        if (bars) (dataCells[r] as boolean[])[c] = true
+        else shaped += moduleEl(s.shape, c + Q, r + Q, s.scale)
+      } else fixed += moduleEl('square', c + Q, r + Q, 1) // alinhamento/temporização: sempre inteiros
     }),
   )
+  if (bars) shaped = barEls(dataCells, s.shape === 'vbar', Q, s.scale)
   const eyes = [
     [0, 0],
     [n - 7, 0],
     [0, n - 7],
   ]
-    .map(([ox = 0, oy = 0]) => eyeEl(s.eyeShape, ox + QUIET, oy + QUIET, s.eye))
+    .map(([ox = 0, oy = 0]) => eyeEl(s.eyeShape, ox + Q, oy + Q, s.eye, s.pupil ?? s.eye))
     .join('')
   let logo = ''
   if (s.logo && zone) {
@@ -185,10 +257,19 @@ function qrInner(m: QrMatrix, s: QrStyle, opts: RenderOpts = {}): string {
         `<image href="${s.logo.href}" x="${zone.cx - side * 0.44}" y="${zone.cx - side * 0.44}" width="${side * 0.88}" height="${side * 0.88}" preserveAspectRatio="xMidYMid meet"/>`
     }
   }
-  const crisp = s.shape === 'square' ? ' shape-rendering="crispEdges"' : ''
+  const crisp = s.shape === 'square' && s.scale === 1 ? ' shape-rendering="crispEdges"' : ''
+  let defs = ''
+  let fill = s.ink
+  if (s.grad) {
+    const id = `qg${s.ink.slice(1)}${s.grad.to.slice(1)}${s.grad.dir}`
+    const [x2, y2] = { h: [total, 0], v: [0, total], d: [total, total] }[s.grad.dir]
+    defs = `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${s.ink}"/><stop offset="1" stop-color="${s.grad.to}"/></linearGradient></defs>`
+    fill = `url(#${id})`
+  }
   return (
+    defs +
     (opts.transparent ? '' : `<rect width="${total}" height="${total}" fill="${s.paper}"/>`) +
-    `<g fill="${s.ink}"${crisp}>${shaped}</g><g fill="${s.ink}" shape-rendering="crispEdges">${fixed}</g>${eyes}${logo}`
+    `<g fill="${fill}"${crisp}>${shaped}</g><g fill="${fill}" shape-rendering="crispEdges">${fixed}</g>${eyes}${logo}`
   )
 }
 
@@ -201,7 +282,7 @@ const wrap = (w: number, h: number, body: string) =>
  */
 export function qrSvg(m: QrMatrix, style: QrStyle, opts: RenderOpts = {}): string {
   const s = sanitizeStyle(style) ?? DEFAULT_STYLE
-  const t = m.size + QUIET * 2
+  const t = m.size + s.quiet * 2
   return wrap(t, t, qrInner(m, s, opts))
 }
 
@@ -210,7 +291,7 @@ const esc = (t: string) => t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 /** QR com moldura e texto (o que o usuário vê e exporta). */
 export function framedSvg(m: QrMatrix, style: QrStyle, opts: RenderOpts = {}): string {
   const s = sanitizeStyle(style) ?? DEFAULT_STYLE
-  const T = m.size + QUIET * 2
+  const T = m.size + s.quiet * 2
   const inner = qrInner(m, s, opts)
   const { kind, pos } = s.frame
   const text = s.frame.text.trim()
@@ -225,10 +306,12 @@ export function framedSvg(m: QrMatrix, style: QrStyle, opts: RenderOpts = {}): s
   const cy = pos === 'above' ? P + C / 2 : P + T + G + C / 2
   const fs = Math.min(C * 0.46, (T * 0.9) / (Math.max(text.length, 1) * 0.56))
 
+  const frameInk = s.frame.color ?? s.ink
+  const textInk = s.frame.textColor
   let body = opts.transparent ? '' : `<rect width="${W}" height="${H}" fill="${s.paper}"/>`
   if (kind === 'line') {
     const sw = T * 0.012
-    body += `<rect x="${sw / 2}" y="${sw / 2}" width="${W - sw}" height="${H - sw}" rx="${T * 0.03}" fill="none" stroke="${s.ink}" stroke-width="${sw}"/>`
+    body += `<rect x="${sw / 2}" y="${sw / 2}" width="${W - sw}" height="${H - sw}" rx="${T * 0.03}" fill="none" stroke="${frameInk}" stroke-width="${sw}"/>`
   }
   body += `<g transform="translate(${P} ${qy})">${inner}</g>`
   if (text) {
@@ -240,10 +323,10 @@ export function framedSvg(m: QrMatrix, style: QrStyle, opts: RenderOpts = {}): s
       const ph = C * 0.76
       const g = C * 0.16
       const tip = pos === 'above' ? `${W / 2 - g},${py + ph} ${W / 2 + g},${py + ph} ${W / 2},${py + ph + g}` : `${W / 2 - g},${py} ${W / 2 + g},${py} ${W / 2},${py - g}`
-      body += `<rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="${ph / 2}" fill="${s.ink}"/><polygon points="${tip}" fill="${s.ink}"/>`
-      body += `<text x="${W / 2}" y="${cy}" text-anchor="middle" dominant-baseline="central" ${font} fill="${s.paper}">${esc(text)}</text>`
+      body += `<rect x="${px}" y="${py}" width="${pw}" height="${ph}" rx="${ph / 2}" fill="${frameInk}"/><polygon points="${tip}" fill="${frameInk}"/>`
+      body += `<text x="${W / 2}" y="${cy}" text-anchor="middle" dominant-baseline="central" ${font} fill="${textInk ?? s.paper}">${esc(text)}</text>`
     } else {
-      body += `<text x="${W / 2}" y="${cy}" text-anchor="middle" dominant-baseline="central" ${font} fill="${s.ink}">${esc(text)}</text>`
+      body += `<text x="${W / 2}" y="${cy}" text-anchor="middle" dominant-baseline="central" ${font} fill="${textInk ?? s.ink}">${esc(text)}</text>`
     }
   }
   return wrap(W, H, body)

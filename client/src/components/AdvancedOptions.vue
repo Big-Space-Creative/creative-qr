@@ -1,38 +1,83 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { t } from '@/i18n'
-import { DPIS, MAX_PX, MIN_PX, type ExportOpts } from '@/lib/exporter'
-import { EYE_SHAPES, FRAMES, MAX_CAPTION, MAX_LOGO, MIN_LOGO } from '@/lib/qr'
+import { EYE_SHAPES, FRAMES, GRAD_DIRS, MAX_CAPTION, MAX_LOGO, MAX_QUIET, MIN_LOGO, MIN_QUIET, MIN_SCALE } from '@/lib/qr'
 import type { Look } from '@/composables/useQrGenerator'
 import AccordionRow from './AccordionRow.vue'
 import BaseButton from './ui/BaseButton.vue'
+import ColorField from './ui/ColorField.vue'
 import BaseInput from './ui/BaseInput.vue'
-import BaseSelect from './ui/BaseSelect.vue'
 import BaseSlider from './ui/BaseSlider.vue'
-import BaseTab from './ui/BaseTab.vue'
 import ChipGroup from './ui/ChipGroup.vue'
 import ToggleRow from './ui/ToggleRow.vue'
 
-// Seção "Avançado": olhos, logo, moldura e texto, exportar (tela 09 do Figma).
+// Seção "Avançado": olhos, logo, moldura e texto (tela 09 do Figma). A exportação ficou em ExportSettings.
 const look = defineModel<Look>('look', { required: true })
-const exp = defineModel<ExportOpts>('exp', { required: true })
-const props = defineProps<{ aspect: number; exportPx: number }>()
 const emit = defineEmits<{ logoAdded: [] }>()
 
-const open = reactive({ eyes: false, logo: false, frame: false, exp: false })
+const open = reactive({ eyes: false, modules: false, logo: false, frame: false })
 
 const eyeLabel = (v: (typeof EYE_SHAPES)[number]) =>
-  ({ square: t('advanced.eyeSquare'), rounded: t('advanced.eyeRounded'), circle: t('advanced.eyeCircle') })[v]
+  ({ square: t('advanced.eyeSquare'), rounded: t('advanced.eyeRounded'), circle: t('advanced.eyeCircle'), leaf: t('advanced.eyeLeaf') })[v]
 const frameLabel = (v: (typeof FRAMES)[number]) =>
   ({ none: t('advanced.frameNone'), line: t('advanced.frameLine'), card: t('advanced.frameCard'), bubble: t('advanced.frameBubble') })[v]
 
+// Cor final inicial do degradê: azul da marca, sempre distinta do tom padrão dos módulos.
+const GRAD_DEFAULT_TO = '#04519e'
+const gradLabel = (v: (typeof GRAD_DIRS)[number]) => ({ h: t('advanced.gradH'), v: t('advanced.gradV'), d: t('advanced.gradD') })[v]
+
+// --- olhos: centro com cor própria (sem isso, segue a cor dos olhos)
+const pupilOwn = computed({
+  get: () => !!look.value.pupil,
+  set: (v) => (look.value.pupil = v ? look.value.eye : undefined),
+})
+const pupilColor = computed({
+  get: () => look.value.pupil ?? look.value.eye,
+  set: (v) => (look.value.pupil = v),
+})
+
+// --- módulos: tamanho em %, degradê e margem
+const scalePct = computed({
+  get: () => Math.round(look.value.scale * 100),
+  set: (v) => (look.value.scale = v / 100),
+})
+const gradOn = computed({
+  get: () => !!look.value.grad,
+  set: (v) => (look.value.grad = v ? { to: GRAD_DEFAULT_TO, dir: 'd' } : undefined),
+})
+const gradTo = computed({
+  get: () => look.value.grad?.to ?? look.value.ink,
+  set: (v) => look.value.grad && (look.value.grad.to = v),
+})
+const gradDir = computed({
+  get: () => look.value.grad?.dir ?? 'h',
+  set: (v) => look.value.grad && (look.value.grad.dir = v),
+})
+
+// --- moldura: cores próprias (sem isso, linha/balão usam a cor dos módulos)
+const frameOwn = computed({
+  get: () => !!look.value.frame.color || !!look.value.frame.textColor,
+  set: (v) => {
+    look.value.frame.color = v ? look.value.ink : undefined
+    look.value.frame.textColor = v ? (look.value.frame.kind === 'bubble' ? look.value.paper : look.value.ink) : undefined
+  },
+})
+const frameColor = computed({
+  get: () => look.value.frame.color ?? look.value.ink,
+  set: (v) => (look.value.frame.color = v),
+})
+const textColor = computed({
+  get: () => look.value.frame.textColor ?? look.value.ink,
+  set: (v) => (look.value.frame.textColor = v),
+})
+
 const summary = computed(() => ({
   eyes: `${eyeLabel(look.value.eyeShape)} · ${look.value.eye.toUpperCase()}`,
+  modules: `${scalePct.value}% · ${t('advanced.quietShort', { n: look.value.quiet })}${look.value.grad ? ` · ${t('advanced.gradShort')}` : ''}`,
   logo: look.value.logo
     ? `${look.value.logo.shape === 'circle' ? t('advanced.logoCircle') : t('advanced.logoSquare')} · ${t('advanced.logoSizeValue', { n: look.value.logo.size })}`
     : t('advanced.logoNone'),
   frame: `${frameLabel(look.value.frame.kind)}${look.value.frame.text.trim() ? ` · “${look.value.frame.text.trim()}”` : ''}`,
-  exp: exp.value.format === 'svg' ? t('advanced.vector') : `${exp.value.format.toUpperCase()} · ${props.exportPx} px · ${exp.value.dpi} DPI`,
 }))
 
 // --- logo: o arquivo é rasterizado em PNG pequeno; assim SVG de terceiros nunca entra no QR
@@ -99,52 +144,29 @@ const caption = computed({
   set: (v) => (look.value.frame.text = v.slice(0, MAX_CAPTION)),
 })
 
-// --- exportar: largura e altura ligadas pela proporção do QR com moldura
-const fmt = (n: number) => String(Math.round(n * 100) / 100).replace('.', ',')
-const num = (s: string) => Number(s.trim().replace(',', '.'))
-const wTxt = ref(fmt(exp.value.width))
-const hTxt = ref(fmt(exp.value.width * props.aspect))
-
-watch([() => exp.value.width, () => props.aspect], () => {
-  if (num(wTxt.value) !== exp.value.width) wTxt.value = fmt(exp.value.width)
-  const h = exp.value.width * props.aspect
-  if (Math.abs(num(hTxt.value) - h) > 0.005) hTxt.value = fmt(h)
-})
-watch(wTxt, (v) => {
-  const n = num(v)
-  if (n > 0 && n !== exp.value.width) exp.value.width = n
-})
-watch(hTxt, (v) => {
-  const n = num(v)
-  if (n > 0 && props.aspect > 0 && Math.abs(n - exp.value.width * props.aspect) > 0.005) exp.value.width = n / props.aspect
-})
-
-function setUnit(u: 'px' | 'cm') {
-  if (u === exp.value.unit) return
-  exp.value.width = u === 'cm' ? Math.round((exp.value.width / exp.value.dpi) * 2.54 * 100) / 100 : Math.round((exp.value.width / 2.54) * exp.value.dpi)
-  exp.value.unit = u
-}
-
-const dpi = computed({
-  get: () => String(exp.value.dpi),
-  set: (v) => (exp.value.dpi = Number(v)),
-})
-const dpiOptions = DPIS.map((d) => ({ value: String(d), label: String(d) }))
-const clamped = computed(() => {
-  const want = exp.value.unit === 'cm' ? (exp.value.width / 2.54) * exp.value.dpi : exp.value.width
-  return want < MIN_PX || want > MAX_PX
-})
-const formats = [
-  { value: 'png', label: 'PNG' },
-  { value: 'svg', label: 'SVG' },
-  { value: 'pdf', label: 'PDF' },
-] as const
 </script>
 
 <template>
   <div>
     <AccordionRow v-model:open="open.eyes" :title="t('advanced.eyes')" :value="summary.eyes">
-      <ChipGroup v-model="look.eyeShape" :label="t('advanced.eyesShape')" :options="EYE_SHAPES.map((v) => ({ value: v, label: eyeLabel(v) }))" />
+      <div class="flex flex-col gap-4">
+        <ChipGroup v-model="look.eyeShape" :label="t('advanced.eyesShape')" :options="EYE_SHAPES.map((v) => ({ value: v, label: eyeLabel(v) }))" />
+        <ToggleRow v-model="pupilOwn">{{ t('advanced.pupilOwn') }}</ToggleRow>
+        <ColorField v-if="pupilOwn" v-model="pupilColor" :label="t('advanced.pupilColor')" />
+      </div>
+    </AccordionRow>
+
+    <AccordionRow v-model:open="open.modules" :title="t('advanced.modules')" :value="summary.modules">
+      <div class="flex flex-col gap-4">
+        <BaseSlider v-model="scalePct" :label="t('advanced.moduleSize')" :min="Math.round(MIN_SCALE * 100)" :max="100" :step="5" :value-text="`${scalePct}%`" />
+        <ToggleRow v-model="gradOn">{{ t('advanced.gradient') }}</ToggleRow>
+        <template v-if="gradOn">
+          <ColorField v-model="gradTo" :label="t('advanced.gradEnd')" />
+          <ChipGroup v-model="gradDir" :label="t('advanced.gradDir')" :options="GRAD_DIRS.map((v) => ({ value: v, label: gradLabel(v) }))" />
+        </template>
+        <BaseSlider v-model="look.quiet" :label="t('advanced.quiet')" :min="MIN_QUIET" :max="MAX_QUIET" />
+        <p v-if="look.quiet < 4" class="text-small text-fg-3">{{ t('advanced.quietNote') }}</p>
+      </div>
     </AccordionRow>
 
     <AccordionRow v-model:open="open.logo" :title="t('advanced.logo')" :value="summary.logo">
@@ -180,25 +202,13 @@ const formats = [
           :label="t('advanced.captionPos')"
           :options="[{ value: 'below', label: t('advanced.below') }, { value: 'above', label: t('advanced.above') }]"
         />
+        <ToggleRow v-model="frameOwn">{{ t('advanced.frameOwn') }}</ToggleRow>
+        <div v-if="frameOwn" class="flex flex-wrap gap-x-8 gap-y-4">
+          <ColorField v-model="frameColor" :label="t('advanced.frameColor')" />
+          <ColorField v-model="textColor" :label="t('advanced.textColor')" />
+        </div>
       </div>
     </AccordionRow>
 
-    <AccordionRow v-model:open="open.exp" :title="t('advanced.export')" :value="summary.exp">
-      <div class="flex flex-col gap-4">
-        <ChipGroup v-model="exp.format" :label="t('advanced.format')" :options="[...formats]" />
-        <div class="flex items-end gap-2">
-          <BaseInput v-model="wTxt" :label="t('advanced.width')" class="min-w-0 flex-1" />
-          <BaseInput v-model="hTxt" :label="t('advanced.height')" class="min-w-0 flex-1" />
-          <BaseTab :active="exp.unit === 'px'" @click="setUnit('px')">px</BaseTab>
-          <BaseTab :active="exp.unit === 'cm'" @click="setUnit('cm')">cm</BaseTab>
-        </div>
-        <p class="text-small" :class="clamped ? 'text-danger' : 'text-fg-3'">
-          {{ t('advanced.finalFile', { w: exportPx, h: Math.round(exportPx * aspect) }) }}{{ clamped ? t('advanced.limits', { min: MIN_PX, max: MAX_PX }) : '' }}
-        </p>
-        <BaseSelect v-model="dpi" :label="t('advanced.dpi')" :options="dpiOptions" />
-        <ToggleRow v-model="exp.transparent">{{ t('advanced.transparent') }}</ToggleRow>
-        <p v-if="exp.format === 'pdf' && exp.transparent" class="text-small text-fg-3">{{ t('advanced.pdfWhite') }}</p>
-      </div>
-    </AccordionRow>
   </div>
 </template>

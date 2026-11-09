@@ -13,6 +13,7 @@ import {
   type Ecc,
   type EyeShape,
   type Frame,
+  type Gradient,
   type Logo,
   type QrStyle,
   type Shape,
@@ -29,6 +30,10 @@ export interface Look {
   paper: string
   shape: Shape
   eyeShape: EyeShape
+  scale: number
+  quiet: number
+  pupil?: string
+  grad?: Gradient
   ecc: Ecc
   logo?: Logo
   frame: Frame
@@ -44,6 +49,8 @@ export function useQrGenerator() {
     paper: DEFAULT_STYLE.paper,
     shape: DEFAULT_STYLE.shape,
     eyeShape: DEFAULT_STYLE.eyeShape,
+    scale: DEFAULT_STYLE.scale,
+    quiet: DEFAULT_STYLE.quiet,
     ecc: 'M',
     frame: { ...DEFAULT_FRAME, text: t('preview.caption') },
   })
@@ -68,6 +75,10 @@ export function useQrGenerator() {
     paper: look.paper,
     shape: look.shape,
     eyeShape: look.eyeShape,
+    scale: look.scale,
+    quiet: look.quiet,
+    ...(look.pupil ? { pupil: look.pupil } : {}),
+    ...(look.grad ? { grad: { ...look.grad } } : {}),
     ...(look.logo ? { logo: { ...look.logo } } : {}),
     frame: { ...look.frame },
   }))
@@ -88,7 +99,10 @@ export function useQrGenerator() {
     return v ? Number(v[2]) / Number(v[1]) : 1
   })
 
-  const contrast = computed(() => Math.min(contrastRatio(look.ink, look.paper), contrastRatio(look.eye, look.paper)))
+  // Todas as cores que desenham o QR (módulos, olhos, centro e fim do degradê) precisam contrastar com o fundo.
+  const contrast = computed(() =>
+    Math.min(...[look.ink, look.eye, look.pupil ?? look.eye, look.grad?.to ?? look.ink].map((c) => contrastRatio(c, look.paper))),
+  )
   const contrastOk = computed(() => contrast.value >= MIN_CONTRAST)
   const logoOk = computed(() => !look.logo || look.logo.size <= MAX_LOGO)
   const modules = computed(() => matrix.value?.size ?? 0)
@@ -141,6 +155,10 @@ export function useQrGenerator() {
     look.paper = r.style.paper
     look.shape = r.style.shape
     look.eyeShape = r.style.eyeShape
+    look.scale = r.style.scale
+    look.quiet = r.style.quiet
+    look.pupil = r.style.pupil
+    look.grad = r.style.grad ? { ...r.style.grad } : undefined
     look.logo = r.style.logo ? { ...r.style.logo } : undefined
     look.frame = { ...r.style.frame }
     look.ecc = r.ecc

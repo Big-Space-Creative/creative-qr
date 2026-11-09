@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import AdvancedOptions from '@/components/AdvancedOptions.vue'
+import ExportSettings from '@/components/ExportSettings.vue'
 import CheckRow from '@/components/CheckRow.vue'
 import DestinoRow from '@/components/DestinoRow.vue'
 import ExportarOpcoes from '@/components/ExportarOpcoes.vue'
@@ -42,7 +43,7 @@ const types: { id: TypeId; icon: string }[] = [
   { id: 'event', icon: 'calendar' },
   { id: 'batch', icon: 'list' },
 ]
-const shapes: Shape[] = ['square', 'dots', 'rounded', 'diamond']
+const shapes: Shape[] = ['square', 'dots', 'rounded', 'diamond', 'leaf', 'vbar', 'hbar']
 const eccs: { value: Ecc; label: string }[] = [
   { value: 'L', label: 'L · 7%' },
   { value: 'M', label: 'M · 15%' },
@@ -308,6 +309,7 @@ async function importProject(e: Event) {
                   v-for="s in shapes"
                   :key="s"
                   :active="look.shape === s"
+                  :icon="`shape-${s}`"
                   @click="look.shape = s"
                   >{{ t(`look.${s}`) }}</BaseTab
                 >
@@ -331,23 +333,17 @@ async function importProject(e: Event) {
             <h2 class="text-heading">{{ t('sections.advanced') }}</h2>
             <p class="text-small text-fg-2">{{ t('sections.advancedHint') }}</p>
             <div class="pt-2">
-              <AdvancedOptions
-                v-model:look="look"
-                v-model:exp="exp"
-                :aspect="g.aspect.value"
-                :export-px="g.exportPx.value"
-                @logo-added="g.ensureEccForLogo()"
-              />
+              <AdvancedOptions v-model:look="look" @logo-added="g.ensureEccForLogo()" />
             </div>
           </section>
         </div>
       </div>
 
       <!-- Prévia -->
-      <div class="flex flex-col gap-6 max-lg:order-3 lg:self-start">
+      <div class="flex flex-col gap-6 max-lg:order-3 lg:sticky lg:top-6 lg:max-h-[calc(100dvh-3rem)] lg:self-start lg:overflow-y-auto">
         <div
           v-if="hasQr"
-          class="overflow-hidden rounded-[2px] transition-opacity [&>svg]:block [&>svg]:w-full"
+          class="shrink-0 overflow-hidden rounded-[2px] transition-opacity [&>svg]:block [&>svg]:w-full"
           :class="{ 'opacity-50': dimmed }"
           role="img"
           :aria-label="t('preview.alt', { dest: destino })"
@@ -362,6 +358,8 @@ async function importProject(e: Event) {
         </div>
 
         <DestinoRow :label="t('preview.destination')" :value="destino" />
+
+        <ExportSettings v-model:exp="exp" :aspect="g.aspect.value" :export-px="g.exportPx.value" />
 
         <section class="flex flex-col gap-3 border-t border-line pt-4">
           <div class="flex items-center gap-2">
@@ -431,7 +429,7 @@ async function importProject(e: Event) {
 
         <div
           data-tutorial="download"
-          class="flex gap-2 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-20 max-lg:border-t max-lg:border-line max-lg:bg-app max-lg:p-4"
+          class="flex gap-2 lg:sticky lg:bottom-0 lg:bg-app lg:pt-2 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-20 max-lg:border-t max-lg:border-line max-lg:bg-app max-lg:p-4"
         >
           <BaseButton
             class="flex-1"

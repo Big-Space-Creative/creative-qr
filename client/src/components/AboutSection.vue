@@ -8,7 +8,7 @@ import TextBlock from './TextBlock.vue'
 const matrix = buildMatrix('ex.co/1', 'M')
 const INK = '#151412'
 const BLUE = '#04519e'
-const base = { paper: '#ffffff', frame: { kind: 'none', text: '', pos: 'below' } } as const
+const base = { paper: '#ffffff', scale: 1, quiet: 2, frame: { kind: 'none', text: '', pos: 'below' } } as const
 const specs: { id: string; name: string; meta: string; style: QrStyle }[] = [
   {
     id: 'square',
