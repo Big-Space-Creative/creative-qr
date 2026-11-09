@@ -1,4 +1,4 @@
-// Dicionário-fonte (pt-BR). O en.ts precisa ter exatamente as mesmas chaves (há um teste para isso).
+// Dicionário-fonte (pt-BR). Todos os idiomas devem ter as mesmas chaves e parâmetros (verificado por teste).
 export default {
   nav: {
     label: 'Principal',
@@ -298,8 +298,8 @@ export default {
     f4Text: 'URL, texto, Wi-Fi, vCard, WhatsApp, PIX, e-mail, local, SMS, telefone, calendário e lote por CSV.',
     f5Title: 'Feito para tela e impressão',
     f5Text: 'Escolha miolo, olhos, cores, logo no centro e moldura com texto. Exporte em PNG, SVG ou PDF, em px ou cm, até 600 DPI.',
-    f6Title: 'Português e English',
-    f6Text: 'A interface tem dois idiomas. Troque pelo seletor no topo da página.',
+    f6Title: 'Escolha seu idioma',
+    f6Text: 'Troque o idioma da interface pelo seletor no topo da página.',
     whoTitle: 'Quem faz e o que inspirou',
     whoText: 'O Creative QR é um produto da Big Space Creative.',
   },

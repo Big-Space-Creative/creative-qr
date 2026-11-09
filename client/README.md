@@ -13,12 +13,16 @@ pnpm build    # type-check + build
 ## Estrutura
 
 - `src/lib/` — QR (`qr.ts`), payloads dos 12 tipos (`payloads.ts`), CSV, exportação, Recentes, consentimento.
-- `src/i18n/` — `pt-BR.ts` (fonte) e `en.ts`. Um teste exige as mesmas chaves nos dois e que toda chave usada no código exista.
+- `src/i18n/` — `pt-BR.ts` (fonte), `en.ts`, `es.ts`, `fr.ts` e `de.ts`. Os testes exigem as mesmas chaves e parâmetros em todos e que toda chave usada no código exista.
 - `src/components/` e `src/components/ui/` — componentes do Figma (página Componentes).
 
 ## Idiomas
 
 `t('chave.com.pontos', { n })` em qualquer componente. Para adicionar um idioma: crie o dicionário, registre em `src/i18n/index.ts` (`LOCALES` e `dicts`).
+
+Português (Brasil), inglês, espanhol, francês e alemão. A escolha salva tem prioridade; sem ela, a detecção percorre os idiomas preferidos do navegador, incluindo variantes regionais (como `es-MX`, `fr-CA` e `de-AT`). Sem correspondência, usa inglês. Chaves ausentes têm fallback para português.
+
+Os modelos CSV usam `nome,conteudo` em português e `name,content` nos demais idiomas, mantendo a compatibilidade com o importador. Datas de eventos continuam no formato `dd/mm/aaaa`; Pix continua em reais (R$).
 
 ## Privacidade e `localStorage`
 
