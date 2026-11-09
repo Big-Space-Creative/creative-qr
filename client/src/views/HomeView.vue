@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import AboutSection from '@/components/AboutSection.vue'
 import AdvancedOptions from '@/components/AdvancedOptions.vue'
 import CheckRow from '@/components/CheckRow.vue'
-import ConsentBanner from '@/components/ConsentBanner.vue'
 import DestinoRow from '@/components/DestinoRow.vue'
 import ExportarOpcoes from '@/components/ExportarOpcoes.vue'
-import FaqSection from '@/components/FaqSection.vue'
-import PreferencesModal from '@/components/PreferencesModal.vue'
 import RecentCard from '@/components/RecentCard.vue'
-import SiteFooter from '@/components/SiteFooter.vue'
-import TopBar from '@/components/TopBar.vue'
 import TypeFields from '@/components/TypeFields.vue'
 import AlertBox from '@/components/ui/AlertBox.vue'
 import AppIcon from '@/components/ui/AppIcon.vue'
@@ -25,7 +19,14 @@ import { recentsAllowed } from '@/lib/consent'
 import { DEFAULT_EXPORT, exportBlob, uniqueName, zipBlob } from '@/lib/exporter'
 import { batchRows, labelFor, snapshot, type TypeId } from '@/lib/payloads'
 import { buildMatrix, DEFAULT_STYLE, MAX_LOGO, qrSvg, type Ecc, type Shape } from '@/lib/qr'
-import { addRecent, mergeRecents, normalizeRecent, recents, whenLabel, type Recent } from '@/lib/recents'
+import {
+  addRecent,
+  mergeRecents,
+  normalizeRecent,
+  recents,
+  whenLabel,
+  type Recent,
+} from '@/lib/recents'
 
 const types: { id: TypeId; icon: string }[] = [
   { id: 'url', icon: 'link' },
@@ -71,13 +72,19 @@ const emptyHint = computed(() => t(hints[type.value] ?? 'preview.emptyDefault'))
 const destino = computed(() => {
   const p = g.payload.value
   if (!p) return '–'
-  return (type.value === 'url' ? p.replace(/^https?:\/\//, '') : (p.split(/\r?\n/)[0] ?? p)).slice(0, 80)
+  return (type.value === 'url' ? p.replace(/^https?:\/\//, '') : (p.split(/\r?\n/)[0] ?? p)).slice(
+    0,
+    80,
+  )
 })
 const ratio = computed(() => g.contrast.value.toFixed(1).replace('.', ','))
 const minPrint = computed(() => `${g.minPrintCm.value.toFixed(1).replace('.', ',')} cm`)
 const actionLabel = computed(() => {
   if (progress.value) return progress.value
-  if (isBatch.value) return g.batchCount.value ? t('actions.downloadZipN', { n: g.batchCount.value }) : t('actions.downloadZip')
+  if (isBatch.value)
+    return g.batchCount.value
+      ? t('actions.downloadZipN', { n: g.batchCount.value })
+      : t('actions.downloadZip')
   return t('actions.download', { fmt: exp.format.toUpperCase() })
 })
 
@@ -141,7 +148,8 @@ async function downloadBatch() {
     return
   }
   save(await zipBlob(files), 'creative-qr-batch.zip')
-  if (skipped) notice.value = skipped === 1 ? t('actions.skipped1') : t('actions.skippedN', { n: skipped })
+  if (skipped)
+    notice.value = skipped === 1 ? t('actions.skipped1') : t('actions.skippedN', { n: skipped })
 }
 
 async function copy() {
@@ -201,10 +209,16 @@ async function exportProject() {
   }
   const items = recents.value.map((r) => {
     const { style, ecc, scan, ...base } = r
-    return { ...base, ...(withAppearance.value ? { style, ecc } : {}), ...(withScan.value ? { scan } : {}) }
+    return {
+      ...base,
+      ...(withAppearance.value ? { style, ecc } : {}),
+      ...(withScan.value ? { scan } : {}),
+    }
   })
   save(
-    new Blob([JSON.stringify({ app: 'creative-qr', version: 1, items }, null, 2)], { type: 'application/json' }),
+    new Blob([JSON.stringify({ app: 'creative-qr', version: 1, items }, null, 2)], {
+      type: 'application/json',
+    }),
     'creative-qr-projeto.json',
   )
 }
@@ -230,30 +244,55 @@ async function importProject(e: Event) {
 </script>
 
 <template>
-  <TopBar />
-  <main class="px-4 pt-6 pb-28 md:px-10 md:pt-12 md:pb-12 xl:px-40">
+  <main
+    id="generator-page"
+    tabindex="-1"
+    class="outline-none px-4 pt-6 pb-28 md:px-10 md:pt-12 md:pb-12 xl:px-40"
+  >
     <div class="grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8">
       <!-- Formulário -->
       <div class="flex flex-col gap-8 max-lg:contents">
-        <h1 class="text-display text-[24px] leading-[30px] md:text-[40px] md:leading-[44px]">{{ t('page.title') }}</h1>
+        <h1 class="text-display text-[24px] leading-[30px] md:text-[40px] md:leading-[44px]">
+          {{ t('page.title') }}
+        </h1>
 
-        <div class="flex flex-col gap-6 max-lg:contents">
-          <section class="flex flex-col gap-4 border-t border-line pt-6 max-lg:order-1">
-            <h2 class="text-body-medium">{{ t('sections.type') }}</h2>
+        <div class="flex flex-col gap-8 max-lg:contents">
+          <section
+            class="flex flex-col gap-6 border-t border-line pt-8 max-lg:order-1"
+            data-tutorial="type"
+          >
+            <h2 class="text-heading">{{ t('sections.type') }}</h2>
             <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
-              <TypeOption v-for="ty in types" :key="ty.id" :icon="ty.icon" :active="type === ty.id" @click="type = ty.id">
+              <TypeOption
+                v-for="ty in types"
+                :key="ty.id"
+                :icon="ty.icon"
+                :active="type === ty.id"
+                @click="type = ty.id"
+              >
                 {{ typeLabel(ty.id) }}
               </TypeOption>
             </div>
           </section>
 
-          <section class="flex flex-col gap-4 border-t border-line pt-6 max-lg:order-2">
-            <h2 class="text-body-medium">{{ isBatch ? t('sections.csv') : t('sections.content') }}</h2>
-            <TypeFields :form="form" :type="type" :error="g.error.value" @touch="g.touched.value = true" />
+          <section
+            class="flex flex-col gap-6 border-t border-line pt-8 max-lg:order-2"
+            data-tutorial="content"
+          >
+            <h2 class="text-heading">{{ isBatch ? t('sections.csv') : t('sections.content') }}</h2>
+            <TypeFields
+              :form="form"
+              :type="type"
+              :error="g.error.value"
+              @touch="g.touched.value = true"
+            />
           </section>
 
-          <section class="flex flex-col gap-4 border-t border-line pt-6 max-lg:order-4">
-            <h2 class="text-body-medium">{{ t('sections.look') }}</h2>
+          <section
+            class="flex flex-col gap-6 border-t border-line pt-8 max-lg:order-4"
+            data-tutorial="appearance"
+          >
+            <h2 class="text-heading">{{ t('sections.look') }}</h2>
             <div class="flex flex-col gap-2">
               <p class="text-small text-fg-2">{{ t('look.colors') }}</p>
               <div class="flex flex-wrap gap-x-8 gap-y-4">
@@ -265,29 +304,47 @@ async function importProject(e: Event) {
             <div class="flex flex-col gap-2">
               <p class="text-small text-fg-2">{{ t('look.shape') }}</p>
               <div class="flex flex-wrap gap-2">
-                <BaseTab v-for="s in shapes" :key="s" :active="look.shape === s" @click="look.shape = s">{{ t(`look.${s}`) }}</BaseTab>
+                <BaseTab
+                  v-for="s in shapes"
+                  :key="s"
+                  :active="look.shape === s"
+                  @click="look.shape = s"
+                  >{{ t(`look.${s}`) }}</BaseTab
+                >
               </div>
             </div>
             <div class="flex flex-col gap-2">
               <p class="text-small text-fg-2">{{ t('look.ecc') }}</p>
               <div class="flex flex-wrap gap-2">
-                <BaseTab v-for="e in eccs" :key="e.value" :active="look.ecc === e.value" @click="look.ecc = e.value">{{ e.label }}</BaseTab>
+                <BaseTab
+                  v-for="e in eccs"
+                  :key="e.value"
+                  :active="look.ecc === e.value"
+                  @click="look.ecc = e.value"
+                  >{{ e.label }}</BaseTab
+                >
               </div>
             </div>
           </section>
 
-          <section class="flex flex-col gap-2 border-t border-line pt-6 max-lg:order-5">
-            <h2 class="text-body-medium">{{ t('sections.advanced') }}</h2>
+          <section class="flex flex-col gap-2 border-t border-line pt-8 max-lg:order-5">
+            <h2 class="text-heading">{{ t('sections.advanced') }}</h2>
             <p class="text-small text-fg-2">{{ t('sections.advancedHint') }}</p>
             <div class="pt-2">
-              <AdvancedOptions v-model:look="look" v-model:exp="exp" :aspect="g.aspect.value" :export-px="g.exportPx.value" @logo-added="g.ensureEccForLogo()" />
+              <AdvancedOptions
+                v-model:look="look"
+                v-model:exp="exp"
+                :aspect="g.aspect.value"
+                :export-px="g.exportPx.value"
+                @logo-added="g.ensureEccForLogo()"
+              />
             </div>
           </section>
         </div>
       </div>
 
       <!-- Prévia -->
-      <div class="flex flex-col gap-4 max-lg:order-3 lg:self-start">
+      <div class="flex flex-col gap-6 max-lg:order-3 lg:self-start">
         <div
           v-if="hasQr"
           class="overflow-hidden rounded-[2px] transition-opacity [&>svg]:block [&>svg]:w-full"
@@ -296,7 +353,10 @@ async function importProject(e: Event) {
           :aria-label="t('preview.alt', { dest: destino })"
           v-html="g.preview.value"
         />
-        <div v-else class="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-line bg-sunken p-6 text-center">
+        <div
+          v-else
+          class="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-[2px] border border-line bg-sunken p-6 text-center"
+        >
           <AppIcon :name="g.tooBig.value ? 'alert' : 'link'" class="text-fg-3" />
           <p class="text-small text-fg-2">{{ g.tooBig.value ? t('preview.tooBig') : emptyHint }}</p>
         </div>
@@ -309,15 +369,25 @@ async function importProject(e: Event) {
             <h2 class="text-body-medium">{{ t('scan.title') }}</h2>
             <span class="flex-1" />
             <span v-if="!hasQr" class="text-data text-fg-3">{{ t('scan.waiting') }}</span>
-            <span v-else-if="g.scan.value === 'running'" class="text-data text-fg-3">{{ t('scan.running') }}</span>
-            <span v-else-if="g.approved.value" class="text-data text-success">{{ t('scan.pass') }}</span>
+            <span v-else-if="g.scan.value === 'running'" class="text-data text-fg-3">{{
+              t('scan.running')
+            }}</span>
+            <span v-else-if="g.approved.value" class="text-data text-success">{{
+              t('scan.pass')
+            }}</span>
             <span v-else class="text-data text-danger">{{ t('scan.fail') }}</span>
           </div>
           <p v-if="!hasQr" class="text-small text-fg-3">{{ t('scan.idleHint') }}</p>
           <template v-else>
             <CheckRow
               :label="t('scan.read')"
-              :value="g.scan.value === 'ok' ? t('scan.same') : g.scan.value === 'running' ? '…' : t('scan.unread')"
+              :value="
+                g.scan.value === 'ok'
+                  ? t('scan.same')
+                  : g.scan.value === 'running'
+                    ? '…'
+                    : t('scan.unread')
+              "
               :icon="g.scan.value === 'fail' ? 'x' : 'check'"
               :tone="g.scan.value === 'fail' ? 'danger' : 'success'"
             />
@@ -335,21 +405,47 @@ async function importProject(e: Event) {
               :icon="g.logoOk.value ? 'check' : 'x'"
               :tone="g.logoOk.value ? 'success' : 'danger'"
             />
-            <CheckRow :label="t('scan.density')" :value="t('scan.densityValue', { n: g.modules.value })" />
+            <CheckRow
+              :label="t('scan.density')"
+              :value="t('scan.densityValue', { n: g.modules.value })"
+            />
             <p v-if="!g.contrastOk.value || !g.logoOk.value" class="text-small text-fg-2">
-              {{ look.logo ? t('scan.hintContrastLogo', { max: MAX_LOGO }) : t('scan.hintContrast') }}
+              {{
+                look.logo ? t('scan.hintContrastLogo', { max: MAX_LOGO }) : t('scan.hintContrast')
+              }}
             </p>
-            <p v-else-if="g.scan.value === 'fail' && look.logo" class="text-small text-fg-2">{{ t('scan.hintLogoCover') }}</p>
+            <p v-else-if="g.scan.value === 'fail' && look.logo" class="text-small text-fg-2">
+              {{ t('scan.hintLogoCover') }}
+            </p>
           </template>
         </section>
 
-        <AlertBox v-if="notice" kind="info" :title="t('common.notice')" dismissible @dismiss="notice = ''">{{ notice }}</AlertBox>
+        <AlertBox
+          v-if="notice"
+          kind="info"
+          :title="t('common.notice')"
+          dismissible
+          @dismiss="notice = ''"
+          >{{ notice }}</AlertBox
+        >
 
         <div
+          data-tutorial="download"
           class="flex gap-2 max-lg:fixed max-lg:inset-x-0 max-lg:bottom-0 max-lg:z-20 max-lg:border-t max-lg:border-line max-lg:bg-app max-lg:p-4"
         >
-          <BaseButton class="flex-1" icon="download" :disabled="!hasQr || !g.approved.value || busy" @click="download">{{ actionLabel }}</BaseButton>
-          <BaseButton variant="secondary" :disabled="!hasQr || !g.approved.value || busy || isBatch" @click="copy">{{ copied ? t('actions.copied') : t('actions.copy') }}</BaseButton>
+          <BaseButton
+            class="flex-1"
+            icon="download"
+            :disabled="!hasQr || !g.approved.value || busy"
+            @click="download"
+            >{{ actionLabel }}</BaseButton
+          >
+          <BaseButton
+            variant="secondary"
+            :disabled="!hasQr || !g.approved.value || busy || isBatch"
+            @click="copy"
+            >{{ copied ? t('actions.copied') : t('actions.copy') }}</BaseButton
+          >
         </div>
       </div>
     </div>
@@ -359,20 +455,47 @@ async function importProject(e: Event) {
       <div class="flex flex-wrap items-center gap-2">
         <div class="flex flex-col gap-1">
           <h2 class="text-body-medium">{{ t('recents.title') }}</h2>
-          <p class="text-small text-fg-2">{{ recentsAllowed ? t('recents.hint') : t('recents.hintOff') }}</p>
+          <p class="text-small text-fg-2">
+            {{ recentsAllowed ? t('recents.hint') : t('recents.hintOff') }}
+          </p>
         </div>
         <span class="flex-1" />
-        <input ref="fileInput" type="file" accept="application/json,.json" class="sr-only" aria-hidden="true" tabindex="-1" @change="importProject" />
-        <BaseButton variant="secondary" @click="fileInput?.click()">{{ t('recents.import') }}</BaseButton>
-        <BaseButton variant="secondary" :disabled="!recents.length" @click="exportOpen = true">{{ t('recents.export') }}</BaseButton>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="application/json,.json"
+          class="sr-only"
+          aria-hidden="true"
+          tabindex="-1"
+          @change="importProject"
+        />
+        <BaseButton variant="secondary" @click="fileInput?.click()">{{
+          t('recents.import')
+        }}</BaseButton>
+        <BaseButton variant="secondary" :disabled="!recents.length" @click="exportOpen = true">{{
+          t('recents.export')
+        }}</BaseButton>
       </div>
-      <AlertBox v-if="importError" kind="danger" :title="t('recents.importFailed')" dismissible @dismiss="importError = false">
+      <AlertBox
+        v-if="importError"
+        kind="danger"
+        :title="t('recents.importFailed')"
+        dismissible
+        @dismiss="importError = false"
+      >
         {{ t('recents.importMsg') }}
       </AlertBox>
       <ul v-if="recents.length" class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         <li v-for="r in recents" :key="r.id" class="min-w-0">
-          <button type="button" class="focus-ring block w-full rounded-sm text-left" @click="openRecent(r)">
-            <RecentCard :name="r.name || typeLabel(r.type)" :meta="`${typeLabel(r.type)} · ${whenLabel(r.at)}`">
+          <button
+            type="button"
+            class="focus-ring block w-full rounded-sm text-left"
+            @click="openRecent(r)"
+          >
+            <RecentCard
+              :name="r.name || typeLabel(r.type)"
+              :meta="`${typeLabel(r.type)} · ${whenLabel(r.at)}`"
+            >
               <span class="block [&>svg]:size-full" aria-hidden="true" v-html="thumb(r)" />
             </RecentCard>
           </button>
@@ -382,20 +505,23 @@ async function importProject(e: Event) {
     </section>
   </main>
 
-  <AboutSection />
-  <FaqSection />
-  <SiteFooter />
-
-  <ConsentBanner />
-  <PreferencesModal />
   <ModalDialog
     v-model:open="exportOpen"
     :title="t('exportProject.title')"
-    :description="recents.length === 1 ? t('exportProject.desc1') : t('exportProject.descN', { n: recents.length })"
+    :description="
+      recents.length === 1
+        ? t('exportProject.desc1')
+        : t('exportProject.descN', { n: recents.length })
+    "
     :confirm-label="t('exportProject.confirm')"
     confirm-icon="download"
     @confirm="exportProject"
   >
-    <ExportarOpcoes v-model:format="exportFormat" v-model:with-appearance="withAppearance" v-model:with-scan="withScan" :count="recents.length" />
+    <ExportarOpcoes
+      v-model:format="exportFormat"
+      v-model:with-appearance="withAppearance"
+      v-model:with-scan="withScan"
+      :count="recents.length"
+    />
   </ModalDialog>
 </template>

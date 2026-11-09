@@ -1,6 +1,26 @@
 // Français. Même structure et mêmes paramètres que le dictionnaire source pt-BR.
 export default {
+  tutorial: {
+    progress: 'Étape {n} sur {total}',
+    skip: 'Passer le tutoriel',
+    previous: 'Retour',
+    next: 'Suivant',
+    finish: 'Terminer',
+    step1Title: 'Choisissez quoi partager',
+    step1Text:
+      'Sélectionnez URL, Wi-Fi, Pix ou un autre type. Les champs changent selon votre choix.',
+    step2Title: 'Saisissez le contenu',
+    step2Text: 'Saisissez les données du code QR. L’aperçu se met à jour pendant la saisie.',
+    step3Title: 'Ajustez l’apparence',
+    step3Text:
+      'Choisissez les couleurs et les formes. Vérifiez le test de lecture avant de télécharger.',
+    step4Title: 'Téléchargez votre code QR',
+    step4Text:
+      'Utilisez le bouton de téléchargement pour enregistrer. Dans Avancé → Exporter, choisissez PNG, SVG, PDF et les autres options.',
+  },
   nav: {
+    tutorial: 'Tutoriel',
+    back: 'Retour au générateur',
     label: 'Navigation principale',
     about: 'À propos',
     faq: 'Questions fréquentes',
@@ -109,7 +129,8 @@ export default {
     geoAddressPh: 'Av. Beira Mar, 1000 — Fortaleza, CE',
     lat: 'Latitude',
     lng: 'Longitude',
-    geoHint: 'Avec la latitude et la longitude, le point est exact ; avec une adresse seule, l’application de cartes effectue la recherche.',
+    geoHint:
+      'Avec la latitude et la longitude, le point est exact ; avec une adresse seule, l’application de cartes effectue la recherche.',
     openIn: 'Ouvrir dans',
     google: 'Google Maps',
     apple: 'Apple Maps',
@@ -157,7 +178,8 @@ export default {
     logoShape: 'Forme du logo',
     logoCircle: 'Cercle',
     logoSquare: 'Carré',
-    logoEccNote: 'La correction des erreurs augmente automatiquement (Q ou H) selon la taille du logo. Le test de lecture vérifie que le code reste lisible.',
+    logoEccNote:
+      'La correction des erreurs augmente automatiquement (Q ou H) selon la taille du logo. Le test de lecture vérifie que le code reste lisible.',
     logoErrFile: 'Utilisez une image PNG ou SVG de 2 Mo maximum.',
     logoErrRead: 'Impossible de lire cette image.',
     frame: 'Cadre et texte',
@@ -211,7 +233,8 @@ export default {
     density: 'Densité',
     densityValue: '{n} × {n} modules',
     hintContrast: 'Augmentez le contraste entre les modules et le fond.',
-    hintContrastLogo: 'Augmentez le contraste entre les modules et le fond et réduisez le logo à {max}% ou moins.',
+    hintContrastLogo:
+      'Augmentez le contraste entre les modules et le fond et réduisez le logo à {max}% ou moins.',
     hintLogoCover: 'Le logo occupe trop de place et empêche la lecture du QR. Réduisez sa taille.',
   },
   actions: {
@@ -239,8 +262,10 @@ export default {
   },
   exportProject: {
     title: 'Exporter le projet',
-    desc1: 'Enregistre le code QR de Récents dans un fichier. Il est conservé uniquement dans ce navigateur : gardez-en une copie.',
-    descN: 'Enregistre les {n} codes QR de Récents dans un fichier. Ils sont conservés uniquement dans ce navigateur : gardez-en une copie.',
+    desc1:
+      'Enregistre le code QR de Récents dans un fichier. Il est conservé uniquement dans ce navigateur : gardez-en une copie.',
+    descN:
+      'Enregistre les {n} codes QR de Récents dans un fichier. Ils sont conservés uniquement dans ce navigateur : gardez-en une copie.',
     confirm: 'Exporter',
     formatLabel: 'Format du fichier',
     json: 'Projet complet (.json)',
@@ -259,12 +284,15 @@ export default {
     necessaryOnly: 'Nécessaire uniquement',
     acceptAll: 'Tout accepter',
     modalTitle: 'Préférences de stockage',
-    modalDesc: 'Choisissez ce que Creative QR peut conserver dans ce navigateur. Vous pouvez modifier vos choix à tout moment.',
+    modalDesc:
+      'Choisissez ce que Creative QR peut conserver dans ce navigateur. Vous pouvez modifier vos choix à tout moment.',
     necessaryTitle: 'Nécessaire',
-    necessaryDesc: 'Mémorise vos choix de confidentialité et votre langue.',
+    necessaryDesc:
+      'Conserve vos choix de confidentialité, votre langue et si vous avez déjà vu le tutoriel.',
     always: 'Toujours actif',
     recentsTitle: 'Récents',
-    recentsDesc: 'Enregistre les codes QR téléchargés ou copiés pour les rouvrir plus tard. Rien n’est envoyé à des serveurs.',
+    recentsDesc:
+      'Enregistre les codes QR téléchargés ou copiés pour les rouvrir plus tard. Rien n’est envoyé à des serveurs.',
     saved: 'Éléments enregistrés dans ce navigateur',
     tagNecessary: 'nécessaire',
     tagRecents: 'récents',
@@ -289,15 +317,20 @@ export default {
     sampleBlueDots: 'Points bleus',
     sampleBlueDotsMeta: 'Points et repères circulaires',
     f1Title: 'Vos données restent avec vous',
-    f1Text: 'Tout est généré dans le navigateur. Le contenu de vos codes QR ne passe par aucun serveur.',
+    f1Text:
+      'Tout est généré dans le navigateur. Le contenu de vos codes QR ne passe par aucun serveur.',
     f2Title: 'Sans compte, sans expiration, sans limite',
-    f2Text: 'Les codes sont statiques : ils n’expirent pas et le nombre de lectures est illimité. En contrepartie, la destination ne peut plus être modifiée après la création.',
+    f2Text:
+      'Les codes sont statiques : ils n’expirent pas et le nombre de lectures est illimité. En contrepartie, la destination ne peut plus être modifiée après la création.',
     f3Title: 'Test de lecture avant le téléchargement',
-    f3Text: 'L’application décode le code créé, mesure le contraste (minimum 4,5 : 1) et n’autorise le téléchargement que si tous les contrôles réussissent.',
+    f3Text:
+      'L’application décode le code créé, mesure le contraste (minimum 4,5 : 1) et n’autorise le téléchargement que si tous les contrôles réussissent.',
     f4Title: '12 types de contenu',
-    f4Text: 'URL, texte, Wi-Fi, vCard, WhatsApp, PIX, e-mail, localisation, SMS, téléphone, calendrier et lots CSV.',
+    f4Text:
+      'URL, texte, Wi-Fi, vCard, WhatsApp, PIX, e-mail, localisation, SMS, téléphone, calendrier et lots CSV.',
     f5Title: 'Pour l’écran et l’impression',
-    f5Text: 'Choisissez les modules, les repères, les couleurs, un logo central et un cadre avec texte. Exportez en PNG, SVG ou PDF, en px ou cm, jusqu’à 600 DPI.',
+    f5Text:
+      'Choisissez les modules, les repères, les couleurs, un logo central et un cadre avec texte. Exportez en PNG, SVG ou PDF, en px ou cm, jusqu’à 600 DPI.',
     f6Title: 'Choisissez votre langue',
     f6Text: 'Changez la langue de l’interface avec le sélecteur en haut de la page.',
     whoTitle: 'Qui le crée et quelles sont ses inspirations',
@@ -332,7 +365,8 @@ export default {
     emailTo: 'L’adresse e-mail du destinataire est invalide.',
     site: 'Site web invalide. Essayez votresite.com.',
     phone: 'Numéro invalide.',
-    phoneLong: 'Numéro invalide. Utilisez l’indicatif du pays + l’indicatif régional + le numéro, comme +55 85 99999-0000.',
+    phoneLong:
+      'Numéro invalide. Utilisez l’indicatif du pays + l’indicatif régional + le numéro, comme +55 85 99999-0000.',
     pixKey: 'Saisissez la clé Pix.',
     pixKeyLong: 'La clé Pix est trop longue.',
     pixName: 'Saisissez le nom du bénéficiaire.',

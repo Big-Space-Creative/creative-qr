@@ -1,6 +1,24 @@
 // Español. Misma estructura y parámetros que el diccionario fuente pt-BR.
 export default {
+  tutorial: {
+    progress: 'Paso {n} de {total}',
+    skip: 'Omitir tutorial',
+    previous: 'Atrás',
+    next: 'Siguiente',
+    finish: 'Finalizar',
+    step1Title: 'Elige qué compartir',
+    step1Text: 'Selecciona URL, Wi-Fi, Pix u otro tipo. Los campos cambian según tu elección.',
+    step2Title: 'Completa el contenido',
+    step2Text: 'Introduce los datos del código QR. La vista previa se actualiza mientras escribes.',
+    step3Title: 'Ajusta la apariencia',
+    step3Text: 'Elige colores y formas. Revisa la prueba de lectura antes de descargar.',
+    step4Title: 'Descarga tu código QR',
+    step4Text:
+      'Usa el botón de descarga para guardar. En Avanzado → Exportar, elige PNG, SVG, PDF y otras opciones.',
+  },
   nav: {
+    tutorial: 'Tutorial',
+    back: 'Volver al generador',
     label: 'Principal',
     about: 'Acerca de',
     faq: 'Preguntas frecuentes',
@@ -109,7 +127,8 @@ export default {
     geoAddressPh: 'Av. Beira Mar, 1000 — Fortaleza, CE',
     lat: 'Latitud',
     lng: 'Longitud',
-    geoHint: 'Con latitud y longitud, el punto es exacto; con solo la dirección, la aplicación de mapas realiza la búsqueda.',
+    geoHint:
+      'Con latitud y longitud, el punto es exacto; con solo la dirección, la aplicación de mapas realiza la búsqueda.',
     openIn: 'Abrir en',
     google: 'Google Maps',
     apple: 'Apple Maps',
@@ -157,7 +176,8 @@ export default {
     logoShape: 'Forma del logo',
     logoCircle: 'Círculo',
     logoSquare: 'Cuadrado',
-    logoEccNote: 'La corrección de errores aumenta automáticamente (Q o H) según el tamaño del logo. La prueba de lectura confirma si sigue siendo legible.',
+    logoEccNote:
+      'La corrección de errores aumenta automáticamente (Q o H) según el tamaño del logo. La prueba de lectura confirma si sigue siendo legible.',
     logoErrFile: 'Usa una imagen PNG o SVG de hasta 2 MB.',
     logoErrRead: 'No se pudo leer esa imagen.',
     frame: 'Marco y texto',
@@ -211,7 +231,8 @@ export default {
     density: 'Densidad',
     densityValue: '{n} × {n} módulos',
     hintContrast: 'Aumenta el contraste entre los módulos y el fondo.',
-    hintContrastLogo: 'Aumenta el contraste entre los módulos y el fondo y reduce el logo al {max}% o menos.',
+    hintContrastLogo:
+      'Aumenta el contraste entre los módulos y el fondo y reduce el logo al {max}% o menos.',
     hintLogoCover: 'El logo ocupa demasiado espacio y el QR no se puede leer. Reduce su tamaño.',
   },
   actions: {
@@ -239,8 +260,10 @@ export default {
   },
   exportProject: {
     title: 'Exportar proyecto',
-    desc1: 'Guarda el código QR de Recientes en un archivo. Solo está en este navegador, así que conserva una copia.',
-    descN: 'Guarda los {n} códigos QR de Recientes en un archivo. Solo están en este navegador, así que conserva una copia.',
+    desc1:
+      'Guarda el código QR de Recientes en un archivo. Solo está en este navegador, así que conserva una copia.',
+    descN:
+      'Guarda los {n} códigos QR de Recientes en un archivo. Solo están en este navegador, así que conserva una copia.',
     confirm: 'Exportar',
     formatLabel: 'Formato del archivo',
     json: 'Proyecto completo (.json)',
@@ -259,12 +282,14 @@ export default {
     necessaryOnly: 'Solo lo necesario',
     acceptAll: 'Aceptar todo',
     modalTitle: 'Preferencias de almacenamiento',
-    modalDesc: 'Elige qué puede guardar Creative QR en este navegador. Puedes cambiarlo cuando quieras.',
+    modalDesc:
+      'Elige qué puede guardar Creative QR en este navegador. Puedes cambiarlo cuando quieras.',
     necessaryTitle: 'Necesario',
-    necessaryDesc: 'Guarda tus preferencias de privacidad y tu idioma.',
+    necessaryDesc: 'Guarda tus preferencias de privacidad, tu idioma y si ya viste el tutorial.',
     always: 'Siempre activo',
     recentsTitle: 'Recientes',
-    recentsDesc: 'Guarda los códigos QR que descargas o copias para volver a abrirlos después. No se envía nada a servidores.',
+    recentsDesc:
+      'Guarda los códigos QR que descargas o copias para volver a abrirlos después. No se envía nada a servidores.',
     saved: 'Elementos guardados en este navegador',
     tagNecessary: 'necesario',
     tagRecents: 'recientes',
@@ -289,15 +314,20 @@ export default {
     sampleBlueDots: 'Puntos azules',
     sampleBlueDotsMeta: 'Puntos y ojos circulares',
     f1Title: 'Tus datos se quedan contigo',
-    f1Text: 'Todo se genera en el navegador. El contenido de tus códigos QR no pasa por ningún servidor.',
+    f1Text:
+      'Todo se genera en el navegador. El contenido de tus códigos QR no pasa por ningún servidor.',
     f2Title: 'Sin cuenta, sin caducidad, sin límite',
-    f2Text: 'Los códigos son estáticos: no caducan ni tienen límite de lecturas. La contrapartida: no puedes cambiar el destino después de generarlos.',
+    f2Text:
+      'Los códigos son estáticos: no caducan ni tienen límite de lecturas. La contrapartida: no puedes cambiar el destino después de generarlos.',
     f3Title: 'Prueba de lectura antes de descargar',
-    f3Text: 'La aplicación decodifica el código que genera, mide el contraste (mínimo 4,5 : 1) y solo permite la descarga cuando todo pasa la prueba.',
+    f3Text:
+      'La aplicación decodifica el código que genera, mide el contraste (mínimo 4,5 : 1) y solo permite la descarga cuando todo pasa la prueba.',
     f4Title: '12 tipos de contenido',
-    f4Text: 'URL, texto, Wi-Fi, vCard, WhatsApp, PIX, correo, ubicación, SMS, teléfono, calendario y lotes CSV.',
+    f4Text:
+      'URL, texto, Wi-Fi, vCard, WhatsApp, PIX, correo, ubicación, SMS, teléfono, calendario y lotes CSV.',
     f5Title: 'Para pantalla e impresión',
-    f5Text: 'Elige módulos, ojos, colores, logo central y marco con texto. Exporta en PNG, SVG o PDF, en px o cm, hasta 600 DPI.',
+    f5Text:
+      'Elige módulos, ojos, colores, logo central y marco con texto. Exporta en PNG, SVG o PDF, en px o cm, hasta 600 DPI.',
     f6Title: 'Elige tu idioma',
     f6Text: 'Cambia el idioma de la interfaz con el selector de la parte superior de la página.',
     whoTitle: 'Quién lo crea y qué lo inspiró',

@@ -24,6 +24,12 @@ Português (Brasil), inglês, espanhol, francês e alemão. A escolha salva tem 
 
 Os modelos CSV usam `nome,conteudo` em português e `name,content` nos demais idiomas, mantendo a compatibilidade com o importador. Datas de eventos continuam no formato `dd/mm/aaaa`; Pix continua em reais (R$).
 
+## Navegação e tutorial
+
+O gerador fica em `#/`, Sobre em `#/sobre` e Perguntas frequentes em `#/faq`. O formulário e a aparência permanecem na memória ao navegar. Sobre e FAQ não aparecem na rolagem do gerador.
+
+O tutorial tem quatro passos, aparece na primeira visita ao gerador após a escolha de privacidade e pode ser reaberto por **Tutorial** no cabeçalho ou menu mobile. Concluir, pular ou sair com Esc registra que ele já foi visto. Sem acesso ao armazenamento, essa informação permanece apenas na sessão. O tutorial não preenche, apaga ou exporta dados do usuário.
+
 ## Privacidade e `localStorage`
 
 Nada é enviado a servidores. O app guarda no navegador:
@@ -32,6 +38,7 @@ Nada é enviado a servidores. O app guarda no navegador:
 |---|---|---|
 | `creative-qr:consent` | a escolha de privacidade | sempre (necessário) |
 | `creative-qr:lang` | idioma | sempre (necessário) |
+| `creative-qr:tutorial:v1` | tutorial já visto | ao concluir ou pular (necessário) |
 | `creative-qr:recentes:v1` | QR codes recentes | só com permissão (Cookies) |
 
 Sem permissão, Recentes vive só na memória da sessão. Há testes em `src/lib/consent.test.ts`.

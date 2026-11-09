@@ -1,6 +1,25 @@
 // Deutsch. Gleiche Struktur und Platzhalter wie im Quelldictionary pt-BR.
 export default {
+  tutorial: {
+    progress: 'Schritt {n} von {total}',
+    skip: 'Anleitung überspringen',
+    previous: 'Zurück',
+    next: 'Weiter',
+    finish: 'Fertig',
+    step1Title: 'Wählen Sie, was Sie teilen möchten',
+    step1Text:
+      'Wählen Sie URL, WLAN, Pix oder einen anderen Typ. Die Felder passen sich Ihrer Auswahl an.',
+    step2Title: 'Geben Sie den Inhalt ein',
+    step2Text: 'Geben Sie die QR-Code-Daten ein. Die Vorschau wird bei der Eingabe aktualisiert.',
+    step3Title: 'Passen Sie das Aussehen an',
+    step3Text: 'Wählen Sie Farben und Formen. Prüfen Sie den Lesetest vor dem Herunterladen.',
+    step4Title: 'Laden Sie Ihren QR-Code herunter',
+    step4Text:
+      'Speichern Sie über die Download-Schaltfläche. Unter Erweitert → Exportieren stehen PNG, SVG, PDF und weitere Optionen bereit.',
+  },
   nav: {
+    tutorial: 'Anleitung',
+    back: 'Zurück zum Generator',
     label: 'Hauptnavigation',
     about: 'Über Creative QR',
     faq: 'Häufige Fragen',
@@ -109,7 +128,8 @@ export default {
     geoAddressPh: 'Av. Beira Mar, 1000 — Fortaleza, CE',
     lat: 'Breitengrad',
     lng: 'Längengrad',
-    geoHint: 'Mit Breiten- und Längengrad ist der Punkt exakt; mit einer Adresse allein sucht die Karten-App danach.',
+    geoHint:
+      'Mit Breiten- und Längengrad ist der Punkt exakt; mit einer Adresse allein sucht die Karten-App danach.',
     openIn: 'Öffnen in',
     google: 'Google Maps',
     apple: 'Apple Maps',
@@ -157,7 +177,8 @@ export default {
     logoShape: 'Logoform',
     logoCircle: 'Kreis',
     logoSquare: 'Quadrat',
-    logoEccNote: 'Die Fehlerkorrektur steigt je nach Logogröße automatisch auf Q oder H. Der Lesetest prüft, ob der Code weiterhin lesbar ist.',
+    logoEccNote:
+      'Die Fehlerkorrektur steigt je nach Logogröße automatisch auf Q oder H. Der Lesetest prüft, ob der Code weiterhin lesbar ist.',
     logoErrFile: 'Verwende ein PNG- oder SVG-Bild mit maximal 2 MB.',
     logoErrRead: 'Dieses Bild konnte nicht gelesen werden.',
     frame: 'Rahmen und Text',
@@ -211,8 +232,10 @@ export default {
     density: 'Dichte',
     densityValue: '{n} × {n} Module',
     hintContrast: 'Erhöhe den Kontrast zwischen Modulen und Hintergrund.',
-    hintContrastLogo: 'Erhöhe den Kontrast zwischen Modulen und Hintergrund und verkleinere das Logo auf höchstens {max}%.',
-    hintLogoCover: 'Das Logo verdeckt zu viel, sodass der QR-Code nicht lesbar ist. Verkleinere es.',
+    hintContrastLogo:
+      'Erhöhe den Kontrast zwischen Modulen und Hintergrund und verkleinere das Logo auf höchstens {max}%.',
+    hintLogoCover:
+      'Das Logo verdeckt zu viel, sodass der QR-Code nicht lesbar ist. Verkleinere es.',
   },
   actions: {
     download: '{fmt} herunterladen',
@@ -233,14 +256,17 @@ export default {
     export: 'Projekt exportieren',
     empty: 'Heruntergeladene oder kopierte QR-Codes erscheinen hier.',
     importFailed: 'Import fehlgeschlagen',
-    importMsg: 'Diese Datei konnte nicht gelesen werden. Verwende eine von Creative QR exportierte .json-Datei.',
+    importMsg:
+      'Diese Datei konnte nicht gelesen werden. Verwende eine von Creative QR exportierte .json-Datei.',
     today: 'heute',
     yesterday: 'gestern',
   },
   exportProject: {
     title: 'Projekt exportieren',
-    desc1: 'Speichert den QR-Code aus „Zuletzt erstellt“ in einer Datei. Er liegt nur in diesem Browser vor, bewahre daher eine Kopie auf.',
-    descN: 'Speichert die {n} QR-Codes aus „Zuletzt erstellt“ in einer Datei. Sie liegen nur in diesem Browser vor, bewahre daher eine Kopie auf.',
+    desc1:
+      'Speichert den QR-Code aus „Zuletzt erstellt“ in einer Datei. Er liegt nur in diesem Browser vor, bewahre daher eine Kopie auf.',
+    descN:
+      'Speichert die {n} QR-Codes aus „Zuletzt erstellt“ in einer Datei. Sie liegen nur in diesem Browser vor, bewahre daher eine Kopie auf.',
     confirm: 'Exportieren',
     formatLabel: 'Dateiformat',
     json: 'Vollständiges Projekt (.json)',
@@ -259,12 +285,15 @@ export default {
     necessaryOnly: 'Nur Notwendiges',
     acceptAll: 'Alles akzeptieren',
     modalTitle: 'Speichereinstellungen',
-    modalDesc: 'Wähle, was Creative QR in diesem Browser speichern darf. Du kannst dies jederzeit ändern.',
+    modalDesc:
+      'Wähle, was Creative QR in diesem Browser speichern darf. Du kannst dies jederzeit ändern.',
     necessaryTitle: 'Notwendig',
-    necessaryDesc: 'Speichert deine Datenschutzeinstellungen und deine Sprache.',
+    necessaryDesc:
+      'Speichert Ihre Datenschutzauswahl, Sprache und ob Sie die Anleitung bereits gesehen haben.',
     always: 'Immer aktiv',
     recentsTitle: 'Zuletzt erstellt',
-    recentsDesc: 'Speichert heruntergeladene oder kopierte QR-Codes, damit du sie später erneut öffnen kannst. Nichts wird an Server gesendet.',
+    recentsDesc:
+      'Speichert heruntergeladene oder kopierte QR-Codes, damit du sie später erneut öffnen kannst. Nichts wird an Server gesendet.',
     saved: 'In diesem Browser gespeicherte Einträge',
     tagNecessary: 'notwendig',
     tagRecents: 'zuletzt erstellt',
@@ -289,15 +318,20 @@ export default {
     sampleBlueDots: 'Blaue Punkte',
     sampleBlueDotsMeta: 'Punkte und runde Marker',
     f1Title: 'Deine Daten bleiben bei dir',
-    f1Text: 'Alles wird im Browser erstellt. Der Inhalt deiner QR-Codes wird an keinen Server gesendet.',
+    f1Text:
+      'Alles wird im Browser erstellt. Der Inhalt deiner QR-Codes wird an keinen Server gesendet.',
     f2Title: 'Ohne Konto, Ablaufdatum oder Limit',
-    f2Text: 'Die Codes sind statisch: Sie laufen nicht ab und lassen sich unbegrenzt scannen. Dafür lässt sich das Ziel nach der Erstellung nicht mehr ändern.',
+    f2Text:
+      'Die Codes sind statisch: Sie laufen nicht ab und lassen sich unbegrenzt scannen. Dafür lässt sich das Ziel nach der Erstellung nicht mehr ändern.',
     f3Title: 'Lesetest vor dem Download',
-    f3Text: 'Die App decodiert den erstellten Code, misst den Kontrast (mindestens 4,5 : 1) und erlaubt den Download erst, wenn alle Prüfungen bestanden sind.',
+    f3Text:
+      'Die App decodiert den erstellten Code, misst den Kontrast (mindestens 4,5 : 1) und erlaubt den Download erst, wenn alle Prüfungen bestanden sind.',
     f4Title: '12 Inhaltstypen',
-    f4Text: 'URL, Text, WLAN, vCard, WhatsApp, PIX, E-Mail, Standort, SMS, Telefon, Kalender und CSV-Stapel.',
+    f4Text:
+      'URL, Text, WLAN, vCard, WhatsApp, PIX, E-Mail, Standort, SMS, Telefon, Kalender und CSV-Stapel.',
     f5Title: 'Für Bildschirm und Druck',
-    f5Text: 'Wähle Module, Marker, Farben, ein Logo in der Mitte und einen Rahmen mit Text. Exportiere als PNG, SVG oder PDF, in px oder cm, mit bis zu 600 DPI.',
+    f5Text:
+      'Wähle Module, Marker, Farben, ein Logo in der Mitte und einen Rahmen mit Text. Exportiere als PNG, SVG oder PDF, in px oder cm, mit bis zu 600 DPI.',
     f6Title: 'Wähle deine Sprache',
     f6Text: 'Ändere die Sprache der Oberfläche über die Auswahl oben auf der Seite.',
     whoTitle: 'Wer dahintersteckt und was uns inspiriert',
@@ -332,7 +366,8 @@ export default {
     emailTo: 'Ungültige E-Mail-Adresse des Empfängers.',
     site: 'Ungültige Website. Verwende etwa deineseite.com.',
     phone: 'Ungültige Nummer.',
-    phoneLong: 'Ungültige Nummer. Verwende Landesvorwahl + Ortsvorwahl + Nummer, etwa +55 85 99999-0000.',
+    phoneLong:
+      'Ungültige Nummer. Verwende Landesvorwahl + Ortsvorwahl + Nummer, etwa +55 85 99999-0000.',
     pixKey: 'Gib den Pix-Schlüssel ein.',
     pixKeyLong: 'Der Pix-Schlüssel ist zu lang.',
     pixName: 'Gib den Namen des Empfängers ein.',
@@ -346,7 +381,8 @@ export default {
     eventStartTime: 'Ungültige Startzeit. Verwende hh:mm.',
     eventEndTime: 'Ungültige Endzeit. Verwende hh:mm.',
     eventOrder: 'Das Ende darf nicht vor dem Beginn liegen.',
-    geoCoords: 'Ungültige Koordinaten. Breitengrad zwischen -90 und 90, Längengrad zwischen -180 und 180.',
+    geoCoords:
+      'Ungültige Koordinaten. Breitengrad zwischen -90 und 90, Längengrad zwischen -180 und 180.',
     csvEmpty: 'Die Datei ist leer.',
     csvNoColumn: 'Die Spalte „content“ wurde in der Kopfzeile nicht gefunden.',
     csvNoRows: 'Keine Zeilen mit Inhalt vorhanden.',

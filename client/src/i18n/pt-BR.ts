@@ -1,6 +1,24 @@
 // Dicionário-fonte (pt-BR). Todos os idiomas devem ter as mesmas chaves e parâmetros (verificado por teste).
 export default {
+  tutorial: {
+    progress: 'Passo {n} de {total}',
+    skip: 'Pular tutorial',
+    previous: 'Voltar',
+    next: 'Próximo',
+    finish: 'Concluir',
+    step1Title: 'Escolha o que vai compartilhar',
+    step1Text: 'Selecione URL, Wi-Fi, Pix ou outro tipo. Os campos mudam conforme sua escolha.',
+    step2Title: 'Preencha o conteúdo',
+    step2Text: 'Informe os dados do QR code. A prévia muda enquanto você preenche.',
+    step3Title: 'Ajuste a aparência',
+    step3Text: 'Escolha cores e formato. Confira o teste de leitura antes de baixar.',
+    step4Title: 'Baixe seu QR code',
+    step4Text:
+      'Use o botão de download para salvar. Em Avançado → Exportar, escolha PNG, SVG, PDF e outras opções.',
+  },
   nav: {
+    tutorial: 'Tutorial',
+    back: 'Voltar ao gerador',
     label: 'Principal',
     about: 'Sobre',
     faq: 'Perguntas frequentes',
@@ -109,7 +127,8 @@ export default {
     geoAddressPh: 'Av. Beira Mar, 1000 — Fortaleza, CE',
     lat: 'Latitude',
     lng: 'Longitude',
-    geoHint: 'Com latitude e longitude o ponto é exato; só com o endereço, o app de mapas faz a busca.',
+    geoHint:
+      'Com latitude e longitude o ponto é exato; só com o endereço, o app de mapas faz a busca.',
     openIn: 'Abrir no',
     google: 'Google Maps',
     apple: 'Apple Maps',
@@ -157,7 +176,8 @@ export default {
     logoShape: 'Forma do logo',
     logoCircle: 'Círculo',
     logoSquare: 'Quadrado',
-    logoEccNote: 'A correção de erro sobe sozinha (Q ou H) conforme o tamanho da logo. O teste de leitura confirma se ainda lê.',
+    logoEccNote:
+      'A correção de erro sobe sozinha (Q ou H) conforme o tamanho da logo. O teste de leitura confirma se ainda lê.',
     logoErrFile: 'Use uma imagem PNG ou SVG de até 2 MB.',
     logoErrRead: 'Não foi possível ler essa imagem.',
     frame: 'Moldura e texto',
@@ -239,8 +259,10 @@ export default {
   },
   exportProject: {
     title: 'Exportar projeto',
-    desc1: 'Salva o QR code de Recentes em um arquivo. Ele fica só neste navegador, então guarde uma cópia.',
-    descN: 'Salva os {n} QR codes de Recentes em um arquivo. Eles ficam só neste navegador, então guarde uma cópia.',
+    desc1:
+      'Salva o QR code de Recentes em um arquivo. Ele fica só neste navegador, então guarde uma cópia.',
+    descN:
+      'Salva os {n} QR codes de Recentes em um arquivo. Eles ficam só neste navegador, então guarde uma cópia.',
     confirm: 'Exportar',
     formatLabel: 'Formato do arquivo',
     json: 'Projeto completo (.json)',
@@ -259,12 +281,14 @@ export default {
     necessaryOnly: 'Só o necessário',
     acceptAll: 'Aceitar tudo',
     modalTitle: 'Preferências de armazenamento',
-    modalDesc: 'Escolha o que o Creative QR pode guardar neste navegador. Você pode mudar isso quando quiser.',
+    modalDesc:
+      'Escolha o que o Creative QR pode guardar neste navegador. Você pode mudar isso quando quiser.',
     necessaryTitle: 'Necessário',
-    necessaryDesc: 'Guarda sua escolha de privacidade e o idioma.',
+    necessaryDesc: 'Guarda sua escolha de privacidade, o idioma e se você já viu o tutorial.',
     always: 'Sempre ativo',
     recentsTitle: 'Recentes',
-    recentsDesc: 'Salva os QR codes que você baixa ou copia, para reabrir depois. Nada é enviado a servidores.',
+    recentsDesc:
+      'Salva os QR codes que você baixa ou copia, para reabrir depois. Nada é enviado a servidores.',
     saved: 'Itens salvos neste navegador',
     tagNecessary: 'necessário',
     tagRecents: 'recentes',
@@ -289,15 +313,20 @@ export default {
     sampleBlueDots: 'Pontos azuis',
     sampleBlueDotsMeta: 'Pontos e olhos redondos',
     f1Title: 'Seus dados ficam com você',
-    f1Text: 'Tudo é gerado no navegador. O conteúdo dos seus QR codes não passa por servidor nenhum.',
+    f1Text:
+      'Tudo é gerado no navegador. O conteúdo dos seus QR codes não passa por servidor nenhum.',
     f2Title: 'Sem conta, sem prazo, sem limite',
-    f2Text: 'Os códigos são estáticos: não expiram e não têm limite de leituras. O outro lado: não dá para trocar o destino depois de gerar.',
+    f2Text:
+      'Os códigos são estáticos: não expiram e não têm limite de leituras. O outro lado: não dá para trocar o destino depois de gerar.',
     f3Title: 'Teste de leitura antes de baixar',
-    f3Text: 'O app decodifica o código que gerou, mede o contraste (mínimo 4,5 : 1) e só libera o download quando tudo passa.',
+    f3Text:
+      'O app decodifica o código que gerou, mede o contraste (mínimo 4,5 : 1) e só libera o download quando tudo passa.',
     f4Title: '12 tipos de conteúdo',
-    f4Text: 'URL, texto, Wi-Fi, vCard, WhatsApp, PIX, e-mail, local, SMS, telefone, calendário e lote por CSV.',
+    f4Text:
+      'URL, texto, Wi-Fi, vCard, WhatsApp, PIX, e-mail, local, SMS, telefone, calendário e lote por CSV.',
     f5Title: 'Feito para tela e impressão',
-    f5Text: 'Escolha miolo, olhos, cores, logo no centro e moldura com texto. Exporte em PNG, SVG ou PDF, em px ou cm, até 600 DPI.',
+    f5Text:
+      'Escolha miolo, olhos, cores, logo no centro e moldura com texto. Exporte em PNG, SVG ou PDF, em px ou cm, até 600 DPI.',
     f6Title: 'Escolha seu idioma',
     f6Text: 'Troque o idioma da interface pelo seletor no topo da página.',
     whoTitle: 'Quem faz e o que inspirou',

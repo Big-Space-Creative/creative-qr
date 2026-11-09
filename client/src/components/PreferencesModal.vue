@@ -16,6 +16,7 @@ watch(preferencesOpen, (open) => {
 const stored = [
   { key: 'creative-qr:consent', tag: 'consent.tagNecessary' },
   { key: 'creative-qr:lang', tag: 'consent.tagNecessary' },
+  { key: 'creative-qr:tutorial:v1', tag: 'consent.tagNecessary' },
   { key: 'creative-qr:recentes:v1', tag: 'consent.tagRecents' },
 ]
 
@@ -40,17 +41,31 @@ function acceptAll() {
   >
     <div class="flex flex-col gap-4">
       <div>
-        <PreferenceRow :title="t('consent.necessaryTitle')" :description="t('consent.necessaryDesc')" fixed />
-        <PreferenceRow v-model="recents" :title="t('consent.recentsTitle')" :description="t('consent.recentsDesc')" />
+        <PreferenceRow
+          :title="t('consent.necessaryTitle')"
+          :description="t('consent.necessaryDesc')"
+          fixed
+        />
+        <PreferenceRow
+          v-model="recents"
+          :title="t('consent.recentsTitle')"
+          :description="t('consent.recentsDesc')"
+        />
       </div>
       <div class="flex flex-col gap-1">
         <p class="text-small text-fg-2">{{ t('consent.saved') }}</p>
-        <div v-for="s in stored" :key="s.key" class="text-data flex items-center justify-between gap-2">
+        <div
+          v-for="s in stored"
+          :key="s.key"
+          class="text-data flex items-center justify-between gap-2"
+        >
           <span class="text-fg">{{ s.key }}</span>
           <span class="text-fg-2">{{ t(s.tag) }}</span>
         </div>
       </div>
-      <BaseButton variant="ghost" class="self-start" @click="clearRecents()">{{ t('consent.clear') }}</BaseButton>
+      <BaseButton variant="ghost" class="self-start" @click="clearRecents()">{{
+        t('consent.clear')
+      }}</BaseButton>
     </div>
   </ModalDialog>
 </template>

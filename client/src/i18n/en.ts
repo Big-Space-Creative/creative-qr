@@ -1,6 +1,24 @@
 // English dictionary. Must keep exactly the same keys as pt-BR.ts (a test enforces it).
 export default {
+  tutorial: {
+    progress: 'Step {n} of {total}',
+    skip: 'Skip tutorial',
+    previous: 'Back',
+    next: 'Next',
+    finish: 'Finish',
+    step1Title: 'Choose what to share',
+    step1Text: 'Select URL, Wi-Fi, Pix or another type. The fields change with your choice.',
+    step2Title: 'Fill in the content',
+    step2Text: 'Enter the QR code data. The preview updates as you type.',
+    step3Title: 'Adjust the appearance',
+    step3Text: 'Choose colors and shapes. Check the scan test before downloading.',
+    step4Title: 'Download your QR code',
+    step4Text:
+      'Use the download button to save. Under Advanced → Export, choose PNG, SVG, PDF and other options.',
+  },
   nav: {
+    tutorial: 'Tutorial',
+    back: 'Back to generator',
     label: 'Main',
     about: 'About',
     faq: 'FAQ',
@@ -109,7 +127,8 @@ export default {
     geoAddressPh: '1000 Beira Mar Ave — Fortaleza, CE',
     lat: 'Latitude',
     lng: 'Longitude',
-    geoHint: 'With latitude and longitude the point is exact; with only the address, the maps app does the search.',
+    geoHint:
+      'With latitude and longitude the point is exact; with only the address, the maps app does the search.',
     openIn: 'Open in',
     google: 'Google Maps',
     apple: 'Apple Maps',
@@ -157,7 +176,8 @@ export default {
     logoShape: 'Logo shape',
     logoCircle: 'Circle',
     logoSquare: 'Square',
-    logoEccNote: 'Error correction rises on its own (Q or H) with the logo size. The scan test confirms it still reads.',
+    logoEccNote:
+      'Error correction rises on its own (Q or H) with the logo size. The scan test confirms it still reads.',
     logoErrFile: 'Use a PNG or SVG image up to 2 MB.',
     logoErrRead: 'Could not read that image.',
     frame: 'Frame and text',
@@ -211,7 +231,8 @@ export default {
     density: 'Density',
     densityValue: '{n} × {n} modules',
     hintContrast: 'Increase the contrast between modules and background.',
-    hintContrastLogo: 'Increase the contrast between modules and background and reduce the logo to {max}% or less.',
+    hintContrastLogo:
+      'Increase the contrast between modules and background and reduce the logo to {max}% or less.',
     hintLogoCover: 'The logo covers too much and the QR cannot be read. Make it smaller.',
   },
   actions: {
@@ -239,8 +260,10 @@ export default {
   },
   exportProject: {
     title: 'Export project',
-    desc1: 'Saves the QR code from Recent to a file. It lives only in this browser, so keep a copy.',
-    descN: 'Saves the {n} QR codes from Recent to a file. They live only in this browser, so keep a copy.',
+    desc1:
+      'Saves the QR code from Recent to a file. It lives only in this browser, so keep a copy.',
+    descN:
+      'Saves the {n} QR codes from Recent to a file. They live only in this browser, so keep a copy.',
     confirm: 'Export',
     formatLabel: 'File format',
     json: 'Full project (.json)',
@@ -261,10 +284,11 @@ export default {
     modalTitle: 'Storage preferences',
     modalDesc: 'Choose what Creative QR may keep in this browser. You can change this at any time.',
     necessaryTitle: 'Necessary',
-    necessaryDesc: 'Keeps your privacy choice and your language.',
+    necessaryDesc: 'Keeps your privacy choice, language and whether you have seen the tutorial.',
     always: 'Always on',
     recentsTitle: 'Recent',
-    recentsDesc: 'Saves the QR codes you download or copy, so you can reopen them later. Nothing is sent to servers.',
+    recentsDesc:
+      'Saves the QR codes you download or copy, so you can reopen them later. Nothing is sent to servers.',
     saved: 'Items saved in this browser',
     tagNecessary: 'necessary',
     tagRecents: 'recent',
@@ -289,15 +313,20 @@ export default {
     sampleBlueDots: 'Blue dots',
     sampleBlueDotsMeta: 'Dots and round eyes',
     f1Title: 'Your data stays with you',
-    f1Text: 'Everything is generated in the browser. The content of your QR codes never goes through a server.',
+    f1Text:
+      'Everything is generated in the browser. The content of your QR codes never goes through a server.',
     f2Title: 'No account, no expiry, no limit',
-    f2Text: 'Codes are static: they never expire and have no scan limit. The flip side: you cannot change the destination after generating.',
+    f2Text:
+      'Codes are static: they never expire and have no scan limit. The flip side: you cannot change the destination after generating.',
     f3Title: 'Scan test before you download',
-    f3Text: 'The app decodes the code it generated, measures the contrast (minimum 4.5 : 1) and only allows the download when everything passes.',
+    f3Text:
+      'The app decodes the code it generated, measures the contrast (minimum 4.5 : 1) and only allows the download when everything passes.',
     f4Title: '12 content types',
-    f4Text: 'URL, text, Wi-Fi, vCard, WhatsApp, PIX, email, location, SMS, phone, calendar and CSV batch.',
+    f4Text:
+      'URL, text, Wi-Fi, vCard, WhatsApp, PIX, email, location, SMS, phone, calendar and CSV batch.',
     f5Title: 'Made for screen and print',
-    f5Text: 'Choose module shape, eyes, colors, center logo and a frame with text. Export as PNG, SVG or PDF, in px or cm, up to 600 DPI.',
+    f5Text:
+      'Choose module shape, eyes, colors, center logo and a frame with text. Export as PNG, SVG or PDF, in px or cm, up to 600 DPI.',
     f6Title: 'Choose your language',
     f6Text: 'Change the interface language with the selector at the top of the page.',
     whoTitle: 'Who makes it and what inspired it',

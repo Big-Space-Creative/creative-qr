@@ -69,6 +69,7 @@
   --color-surface: var(--bg-surface);
   --color-sunken: var(--bg-sunken);
   --color-accent: var(--bg-accent);
+  --color-link: var(--text-accent);
   --color-accent-hover: var(--bg-accent-hover);
   --color-accent-pressed: var(--bg-accent-pressed);
   --color-scrim: var(--bg-scrim);
