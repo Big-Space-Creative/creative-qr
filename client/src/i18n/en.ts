@@ -353,6 +353,8 @@ export default {
   },
   err: {
     url: 'Invalid address. Try something like yoursite.com/promo.',
+    blockedUrl: 'This kind of link cannot be used: scams, illegal content and blocked services are not allowed.',
+    blockedBatch: 'Row {n}: this kind of link cannot be used.',
     limitChars: 'Limit of {n} characters.',
     wifiSsid: 'Enter the network name.',
     wifiPass: 'Enter the password or choose “No password”.',

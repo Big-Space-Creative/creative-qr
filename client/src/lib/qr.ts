@@ -1,3 +1,4 @@
+import { isBlockedUrl } from './blocklist'
 import jsQR from 'jsqr'
 import { encode } from 'uqr'
 import { zlibSync } from 'fflate'
@@ -393,6 +394,7 @@ export function normalizeUrl(raw: string): { url: string } | { error: string } |
     const u = new URL(withScheme)
     const okHost = u.hostname.includes('.') || u.hostname === 'localhost'
     if (!/^https?:$/.test(u.protocol) || !okHost) return { error: 'err.url' }
+    if (isBlockedUrl(u.hostname)) return { error: 'err.blockedUrl' }
     return { url: u.toString() }
   } catch {
     return { error: 'err.url' }

@@ -358,6 +358,8 @@ export default {
   },
   err: {
     url: 'Ungültige Adresse. Verwende etwa deineseite.com/aktion.',
+    blockedUrl: 'Diese Art von Link kann nicht verwendet werden: Betrug, illegale Inhalte und gesperrte Dienste sind nicht erlaubt.',
+    blockedBatch: 'Zeile {n}: Diese Art von Link kann nicht verwendet werden.',
     limitChars: 'Maximal {n} Zeichen.',
     wifiSsid: 'Gib den Netzwerknamen ein.',
     wifiPass: 'Gib das Passwort ein oder wähle „Ohne Passwort“.',

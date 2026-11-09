@@ -357,6 +357,8 @@ export default {
   },
   err: {
     url: 'Adresse invalide. Essayez votresite.com/promo.',
+    blockedUrl: 'Ce type de lien ne peut pas être utilisé : arnaques, contenus illicites et services bloqués sont interdits.',
+    blockedBatch: 'Ligne {n} : ce type de lien ne peut pas être utilisé.',
     limitChars: 'Limite de {n} caractères.',
     wifiSsid: 'Saisissez le nom du réseau.',
     wifiPass: 'Saisissez le mot de passe ou choisissez « Sans mot de passe ».',

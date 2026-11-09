@@ -353,6 +353,8 @@ export default {
   },
   err: {
     url: 'Endereço inválido. Use algo como seusite.com/promo.',
+    blockedUrl: 'Este tipo de link não pode ser utilizado: golpes, conteúdo ilícito ou serviços bloqueados não são permitidos.',
+    blockedBatch: 'Linha {n}: este tipo de link não pode ser utilizado.',
     limitChars: 'Limite de {n} caracteres.',
     wifiSsid: 'Informe o nome da rede.',
     wifiPass: 'Informe a senha ou escolha “Sem senha”.',

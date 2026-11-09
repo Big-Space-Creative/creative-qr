@@ -354,6 +354,8 @@ export default {
   },
   err: {
     url: 'Dirección no válida. Usa algo como tusitio.com/promo.',
+    blockedUrl: 'Este tipo de enlace no se puede utilizar: no se permiten estafas, contenido ilícito ni servicios bloqueados.',
+    blockedBatch: 'Fila {n}: este tipo de enlace no se puede utilizar.',
     limitChars: 'Límite de {n} caracteres.',
     wifiSsid: 'Introduce el nombre de la red.',
     wifiPass: 'Introduce la contraseña o elige “Sin contraseña”.',

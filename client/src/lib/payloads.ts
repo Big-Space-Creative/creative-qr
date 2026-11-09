@@ -1,4 +1,5 @@
 import { csvToRows, parseCsv } from './csv'
+import { hasBlockedUrl } from './blocklist'
 import { normalizeUrl } from './qr'
 
 export type TypeId =
@@ -194,7 +195,8 @@ function vcardPayload(v: Form['vcard']): Built {
   let site = ''
   if (v.site.trim()) {
     const r = normalizeUrl(v.site)
-    if (!r || 'error' in r) return err('err.site')
+    if (!r) return err('err.site')
+    if ('error' in r) return err(r.error === 'err.blockedUrl' ? r.error : 'err.site')
     site = r.url
   }
   const fn = `${v.first.trim()} ${v.last.trim()}`.trim() || v.company.trim()
@@ -240,7 +242,10 @@ function geoPayload(g: Form['geo']): Built {
 
 /** Linhas do CSV carregado (ou o erro de leitura). */
 export function batchRows(b: Form['batch']): { rows: CsvRow[] } | { error: string; params?: Record<string, string | number> } {
-  return csvToRows(parseCsv(b.raw), b.header)
+  const r = csvToRows(parseCsv(b.raw), b.header)
+  if ('error' in r) return r
+  const bad = r.rows.findIndex((x) => hasBlockedUrl(x.content))
+  return bad < 0 ? r : { error: 'err.blockedBatch', params: { n: bad + 1 } }
 }
 
 export function buildPayload(type: TypeId, f: Form): Built {
@@ -257,6 +262,7 @@ export function buildPayload(type: TypeId, f: Form): Built {
     case 'text': {
       const t = f.text.trim()
       if (!t) return null
+      if (hasBlockedUrl(t)) return err('err.blockedUrl')
       return t.length > LIMITS.text ? err('err.limitChars', { n: LIMITS.text }) : { payload: t }
     }
     case 'wifi': {
