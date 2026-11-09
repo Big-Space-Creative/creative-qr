@@ -23,7 +23,6 @@ docker build -t creative-qr:TAG .
 | Variável | Obrigatória | O que é |
 |---|---|---|
 | `APP_DOMAIN` | sim | domínio principal |
-| `APP_DOMAIN_2` | não | domínio extra, atendido ao mesmo tempo |
 | `CQR_IMAGE` | não | imagem a executar (padrão `creative-qr:latest`), ex.: `creative-qr:TAG` |
 
 Pré-requisitos do cluster: rede `network_swarm_public` e o resolver `letsencryptresolver` do Traefik. A saúde do container é verificada em `/healthz`.

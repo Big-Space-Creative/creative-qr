@@ -29,7 +29,8 @@ function hostOf(line) {
   const token = t.split(/\s+/).pop()
   try {
     const h = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(token) ? token : `https://${token}`).hostname.toLowerCase().replace(/\.$/, '')
-    if (!h.includes('.') || /^[\d.]+$/.test(h) || h === 'localhost') return null // IPs e hosts sem TLD ficam de fora
+    // Só nomes DNS simples. O feed é de terceiros e o host vai para código-fonte gerado: nada de aspas ou símbolos.
+    if (!/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(h) || /^[\d.]+$/.test(h)) return null // IPs e hosts sem TLD ficam de fora
     return h
   } catch {
     return null
@@ -60,6 +61,6 @@ const list = [...hosts].sort()
 writeFileSync(
   OUT,
   `// GERADO por scripts/update-blocklist.mjs em ${new Date().toISOString().slice(0, 10)}. Não edite à mão.\n` +
-    `export const BLOCKED_HOSTS: ReadonlySet<string> = new Set([\n${list.map((h) => `  '${h}',`).join('\n')}\n])\n`,
+    `export const BLOCKED_HOSTS: ReadonlySet<string> = new Set([\n${list.map((h) => `  ${JSON.stringify(h)},`).join('\n')}\n])\n`,
 )
 console.log(`Total: ${list.length} hosts -> src/lib/blocklist.data.ts`)

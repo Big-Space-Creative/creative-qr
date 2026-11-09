@@ -1,7 +1,6 @@
 # Stack Docker Swarm (Traefik), no mesmo padrão dos outros projetos. Sem banco de dados.
 # Variáveis (defina na stack do Portainer, nunca no arquivo):
 #   APP_DOMAIN    domínio principal, ex.: creative-qr.bigspacecreative.com.br
-#   APP_DOMAIN_2  domínio extra opcional — atende os dois ao mesmo tempo
 #   CQR_IMAGE     imagem a executar (padrão: creative-qr:latest)
 # Pré-requisito: a imagem existe no nó manager (docker build -t creative-qr:TAG . na raiz do repo)
 # ou num registry acessível. O Swarm não faz build, por isso não há "build:" aqui.
@@ -20,7 +19,7 @@ services:
       labels:
         - traefik.enable=true
         - traefik.docker.network=network_swarm_public
-        - traefik.http.routers.creative-qr.rule=Host(`${APP_DOMAIN}`) || Host(`${APP_DOMAIN_2:-extra.invalid}`)
+        - traefik.http.routers.creative-qr.rule=Host(`${APP_DOMAIN}`)
         - traefik.http.routers.creative-qr.entrypoints=websecure
         - traefik.http.routers.creative-qr.tls.certresolver=letsencryptresolver
         - traefik.http.routers.creative-qr.service=creative-qr
