@@ -1,0 +1,9 @@
+#!/bin/sh
+# Monta a meta tag do Google Search Console a partir de GOOGLE_SITE_VERIFICATION.
+# Vazia = nenhuma tag é injetada. Aceita só o token (A-Z a-z 0-9 _ -) para evitar injeção de HTML.
+if [ -n "${GOOGLE_SITE_VERIFICATION:-}" ] && printf '%s' "$GOOGLE_SITE_VERIFICATION" | grep -Eq '^[A-Za-z0-9_-]+$'; then
+  GSC_META_TAG="<meta name=\"google-site-verification\" content=\"${GOOGLE_SITE_VERIFICATION}\" />"
+else
+  GSC_META_TAG=""
+fi
+export GSC_META_TAG

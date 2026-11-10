@@ -21,7 +21,11 @@ RUN pnpm build
 # nginx sem root, escutando na porta 8080.
 FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
 
-COPY client/nginx.conf /etc/nginx/conf.d/default.conf
+# nginx.conf vira template: o entrypoint do nginx roda envsubst e grava em conf.d/default.conf.
+# Só variáveis definidas no ambiente são substituídas ($uri etc. ficam intactos).
+COPY client/nginx.conf /etc/nginx/templates/default.conf.template
+# Script .envsh (executado "sourced" pelo entrypoint, antes do envsubst).
+COPY docker/15-gsc-meta.envsh /docker-entrypoint.d/15-gsc-meta.envsh
 COPY --from=client-builder /build/dist /usr/share/nginx/html
 
 EXPOSE 8080

@@ -1,6 +1,7 @@
 # Stack Docker Swarm (Traefik), no mesmo padrão dos outros projetos. Sem banco de dados.
 # Variáveis (defina na stack do Portainer, nunca no arquivo):
 #   APP_DOMAIN    domínio principal, ex.: creative-qr.bigspacecreative.com.br
+#   GOOGLE_SITE_VERIFICATION  token do Google Search Console (só o valor do content="...")
 #   CQR_IMAGE     imagem a executar (padrão: creative-qr:latest)
 # Pré-requisito: a imagem existe no nó manager (docker build -t creative-qr:TAG . na raiz do repo)
 # ou num registry acessível. O Swarm não faz build, por isso não há "build:" aqui.
@@ -9,6 +10,8 @@ version: "3.7"
 services:
   creative-qr:
     image: ${CQR_IMAGE:-creative-qr:latest}
+    environment:
+      - GOOGLE_SITE_VERIFICATION=${GOOGLE_SITE_VERIFICATION:-}
     networks:
       - network_swarm_public
     deploy:
