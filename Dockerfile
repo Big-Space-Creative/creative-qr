@@ -17,6 +17,9 @@ RUN pnpm install --frozen-lockfile
 COPY client/ ./
 RUN pnpm build
 
+COPY docker/15-gsc-meta.envsh /build/docker-scripts/15-gsc-meta.envsh
+RUN chmod 755 /build/docker-scripts/15-gsc-meta.envsh
+
 # ── Stage 2: runtime ─────────────────────────────────────────────────────────
 # nginx sem root, escutando na porta 8080.
 FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
@@ -25,8 +28,9 @@ FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
 # Só variáveis definidas no ambiente são substituídas ($uri etc. ficam intactos).
 COPY client/nginx.conf /etc/nginx/templates/default.conf.template
 # Script .envsh (executado "sourced" pelo entrypoint, antes do envsubst).
-# --chmod=755: o entrypoint ignora scripts sem permissão de execução (o Windows não guarda esse bit).
-COPY --chmod=755 docker/15-gsc-meta.envsh /docker-entrypoint.d/15-gsc-meta.envsh
+# O entrypoint ignora scripts sem permissão de execução: o chmod é feito no stage de build
+# (COPY --from preserva o modo; não exige BuildKit nem USER root no runtime).
+COPY --from=client-builder /build/docker-scripts/15-gsc-meta.envsh /docker-entrypoint.d/15-gsc-meta.envsh
 # Valor padrão vazio: se o script falhar, o envsubst ainda substitui e o nginx sobe sem a tag.
 ENV GSC_META_TAG=""
 COPY --from=client-builder /build/dist /usr/share/nginx/html
