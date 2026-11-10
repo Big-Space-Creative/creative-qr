@@ -25,7 +25,10 @@ FROM nginxinc/nginx-unprivileged:stable-alpine AS runtime
 # Só variáveis definidas no ambiente são substituídas ($uri etc. ficam intactos).
 COPY client/nginx.conf /etc/nginx/templates/default.conf.template
 # Script .envsh (executado "sourced" pelo entrypoint, antes do envsubst).
-COPY docker/15-gsc-meta.envsh /docker-entrypoint.d/15-gsc-meta.envsh
+# --chmod=755: o entrypoint ignora scripts sem permissão de execução (o Windows não guarda esse bit).
+COPY --chmod=755 docker/15-gsc-meta.envsh /docker-entrypoint.d/15-gsc-meta.envsh
+# Valor padrão vazio: se o script falhar, o envsubst ainda substitui e o nginx sobe sem a tag.
+ENV GSC_META_TAG=""
 COPY --from=client-builder /build/dist /usr/share/nginx/html
 
 EXPOSE 8080
